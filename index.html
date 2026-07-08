@@ -7,62 +7,62 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
-    --navy:#16365F;--navy-dark:#102A4C;--navy-card:#1E4474;--navy-line:#305487;
-    --gold:#C8A24B;--gold-soft:#dcbd72;--white:#FFFFFF;--text:#EDF2FB;--muted:#AEBDD8;
-    --danger:#C0556B;--ok:#5BA888;
+    --navy:#16365F;--navy-dark:#0F2544;--navy-card:#EBF0F7;--navy-line:#CBD5E1;
+    --gold:#C8A24B;--gold-soft:#8B5E0A;--white:#FFFFFF;--bg:#EEF2F7;
+    --text:#1E3A5F;--muted:#64748B;--danger:#B91C3A;--ok:#166534;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    background:var(--navy-dark);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;}
-  h1,h2,h3{font-weight:600;color:var(--white)}
-  a{color:var(--gold-soft);text-decoration:none}
+    background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-weight:600;color:var(--navy)}
+  a{color:var(--navy);text-decoration:none}
   button{font-family:inherit;cursor:pointer;border:none}
   input,select,textarea{font-family:inherit}
 
-  #login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--navy-dark)}
-  .login-card{width:100%;max-width:420px;background:var(--navy);border:1px solid var(--navy-line);border-radius:14px;padding:38px 32px}
-  .brand{display:flex;flex-direction:column;align-items:center;margin-bottom:26px}
-  .brand .mark{width:54px;height:54px;border-radius:12px;background:var(--gold);color:var(--navy-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;margin-bottom:14px;letter-spacing:.5px}
-  .brand h1{font-size:19px;letter-spacing:.3px}
+  #login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg)}
+  .login-card{width:100%;max-width:400px;background:var(--white);border:1px solid var(--navy-line);border-radius:16px;padding:40px 36px;box-shadow:0 4px 24px rgba(22,54,95,.10)}
+  .brand{display:flex;flex-direction:column;align-items:center;margin-bottom:28px}
+  .brand .mark{width:56px;height:56px;border-radius:14px;background:var(--navy);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;margin-bottom:14px;letter-spacing:.5px}
+  .brand h1{font-size:19px;letter-spacing:.3px;color:var(--navy)}
   .brand .tag{color:var(--muted);font-size:12px;margin-top:5px;text-align:center}
   .field{margin-bottom:14px}
-  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-  .field input,.field select,.field textarea{width:100%;background:var(--navy-dark);border:1px solid var(--navy-line);color:var(--text);padding:11px 12px;border-radius:8px;font-size:14px}
-  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--gold)}
-  .btn{background:var(--gold);color:var(--navy-dark);font-weight:600;padding:11px 16px;border-radius:8px;font-size:14px;transition:background .15s}
-  .btn:hover{background:var(--gold-soft)}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500}
+  .field input,.field select,.field textarea{width:100%;background:var(--white);border:1.5px solid var(--navy-line);color:var(--text);padding:11px 12px;border-radius:8px;font-size:14px}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--navy)}
+  .btn{background:var(--navy);color:var(--white);font-weight:600;padding:11px 16px;border-radius:8px;font-size:14px;transition:background .15s}
+  .btn:hover{background:var(--navy-dark)}
   .btn:disabled{opacity:.5;cursor:not-allowed}
   .btn-block{width:100%;margin-top:6px}
-  .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--navy-line)}
-  .btn-ghost:hover{border-color:var(--gold);color:var(--gold-soft)}
+  .btn-ghost{background:var(--white);color:var(--navy);border:1.5px solid var(--navy-line)}
+  .btn-ghost:hover{border-color:var(--navy);background:var(--bg)}
   .btn-danger{background:var(--danger);color:#fff}
   .btn-danger:hover{filter:brightness(1.1)}
   .btn-sm{padding:6px 11px;font-size:12px;border-radius:6px}
   .login-err{color:var(--danger);font-size:12.5px;margin-top:10px;min-height:16px;text-align:center}
   .hint{color:var(--muted);font-size:11.5px;text-align:center;margin-top:18px;line-height:1.7}
-  .setup-box{font-size:12.5px;color:var(--text);line-height:1.7;background:var(--navy-dark);border:1px solid var(--navy-line);border-radius:8px;padding:16px;margin-top:6px}
-  .setup-box code{background:#06101f;color:var(--gold-soft);padding:1px 5px;border-radius:4px;font-size:11.5px}
+  .setup-box{font-size:12.5px;color:var(--text);line-height:1.7;background:var(--bg);border:1px solid var(--navy-line);border-radius:8px;padding:16px;margin-top:6px}
+  .setup-box code{background:var(--navy);color:var(--gold);padding:1px 5px;border-radius:4px;font-size:11.5px}
 
   #app{display:none;min-height:100vh}
   .shell{display:flex;min-height:100vh}
-  .sidebar{width:248px;flex-shrink:0;background:var(--navy-dark);border-right:1px solid var(--navy-line);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:40}
-  .sidebar-head{padding:20px 20px 16px;border-bottom:1px solid var(--navy-line);display:flex;align-items:center;gap:11px}
-  .sidebar-head .mark{width:38px;height:38px;border-radius:9px;background:var(--gold);color:var(--navy-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0}
-  .sidebar-head .name{font-size:14px;font-weight:600;color:var(--white);line-height:1.2}
-  .sidebar-head .sub{font-size:10.5px;color:var(--muted);margin-top:2px}
+  .sidebar{width:248px;flex-shrink:0;background:var(--navy);border-right:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:40}
+  .sidebar-head{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:11px}
+  .sidebar-head .mark{width:38px;height:38px;border-radius:9px;background:var(--gold);color:var(--white);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0}
+  .sidebar-head .name{font-size:14px;font-weight:600;color:#FFFFFF;line-height:1.2}
+  .sidebar-head .sub{font-size:10.5px;color:rgba(255,255,255,.5);margin-top:2px}
   .nav{flex:1;overflow-y:auto;padding:12px 10px}
-  .nav-item{display:block;width:100%;text-align:left;background:transparent;color:var(--muted);padding:10px 13px;border-radius:8px;font-size:13.5px;margin-bottom:2px;transition:all .12s}
-  .nav-item:hover{background:var(--navy-card);color:var(--text)}
-  .nav-item.active{background:var(--gold);color:var(--navy-dark);font-weight:600}
-  .nav-sep{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#5d6f8f;padding:14px 13px 6px}
-  .sidebar-foot{padding:14px 16px;border-top:1px solid var(--navy-line)}
-  .sidebar-foot .u-name{font-size:13px;color:var(--white);font-weight:600}
-  .sidebar-foot .u-role{font-size:11px;color:var(--gold-soft);text-transform:capitalize;margin-bottom:10px}
+  .nav-item{display:block;width:100%;text-align:left;background:transparent;color:rgba(255,255,255,.6);padding:10px 13px;border-radius:8px;font-size:13.5px;margin-bottom:2px;transition:all .12s}
+  .nav-item:hover{background:rgba(255,255,255,.1);color:#FFFFFF}
+  .nav-item.active{background:var(--gold);color:var(--navy);font-weight:600}
+  .nav-sep{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.35);padding:14px 13px 6px}
+  .sidebar-foot{padding:14px 16px;border-top:1px solid rgba(255,255,255,.08)}
+  .sidebar-foot .u-name{font-size:13px;color:#FFFFFF;font-weight:600}
+  .sidebar-foot .u-role{font-size:11px;color:var(--gold);text-transform:capitalize;margin-bottom:10px}
 
   .main{flex:1;margin-left:248px;min-width:0;display:flex;flex-direction:column}
-  .topbar{height:62px;border-bottom:1px solid var(--navy-line);background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 26px;position:sticky;top:0;z-index:30}
-  .topbar h2{font-size:17px}
+  .topbar{height:62px;border-bottom:1px solid var(--navy-line);background:var(--white);display:flex;align-items:center;justify-content:space-between;padding:0 26px;position:sticky;top:0;z-index:30}
+  .topbar h2{font-size:17px;color:var(--navy)}
   .topbar .right{display:flex;align-items:center;gap:12px}
   .sync{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted)}
   .dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
@@ -71,49 +71,49 @@
   .content{padding:26px;flex:1}
 
   .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
-  .stat{background:var(--navy);border:1px solid var(--navy-line);border-radius:12px;padding:18px}
+  .stat{background:var(--white);border:1px solid var(--navy-line);border-radius:12px;padding:18px;box-shadow:0 1px 4px rgba(22,54,95,.06)}
   .stat .label{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
-  .stat .value{font-size:25px;font-weight:700;color:var(--white);margin-top:8px}
-  .stat .value.gold{color:var(--gold)}
+  .stat .value{font-size:25px;font-weight:700;color:var(--navy);margin-top:8px}
+  .stat .value.gold{color:var(--gold-soft)}
 
-  .panel{background:var(--navy);border:1px solid var(--navy-line);border-radius:12px;padding:20px;margin-bottom:20px}
+  .panel{background:var(--white);border:1px solid var(--navy-line);border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 1px 4px rgba(22,54,95,.06)}
   .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
-  .panel-head h3{font-size:15px}
+  .panel-head h3{font-size:15px;color:var(--navy)}
   .panel-sub{font-size:12px;color:var(--muted);margin-top:3px}
 
   .table-wrap{overflow-x:auto}
   table{width:100%;border-collapse:collapse;font-size:13px}
-  th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:10px 12px;border-bottom:1px solid var(--navy-line);white-space:nowrap}
+  th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:10px 12px;border-bottom:1.5px solid var(--navy-line);white-space:nowrap;background:var(--bg)}
   td{padding:11px 12px;border-bottom:1px solid var(--navy-line);color:var(--text);vertical-align:middle}
   tr:last-child td{border-bottom:none}
   tbody tr:hover{background:var(--navy-card)}
   .empty{text-align:center;color:var(--muted);padding:34px 10px;font-size:13px}
-  .pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:var(--navy-line);color:var(--text)}
-  .pill.ok{background:rgba(79,154,122,.18);color:#7fd1ab}
-  .pill.warn{background:rgba(200,162,75,.18);color:var(--gold-soft)}
-  .pill.muted{background:var(--navy-line);color:var(--muted)}
-  .pill.danger{background:rgba(192,85,107,.20);color:#e79aa8}
-  .section-label{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold-soft);margin:4px 0 10px}
+  .pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:#F1F5F9;color:var(--muted)}
+  .pill.ok{background:#DCFCE7;color:#166534}
+  .pill.warn{background:#FEF3C7;color:#92400E}
+  .pill.muted{background:#F1F5F9;color:var(--muted)}
+  .pill.danger{background:#FEE2E2;color:#991B1B}
+  .section-label{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--navy);border-left:3px solid var(--gold);padding-left:8px;margin:4px 0 12px}
   .row-actions{display:flex;gap:7px;white-space:nowrap;justify-content:flex-end}
-  .icon-btn{background:var(--navy-card);color:var(--text);border:1px solid var(--navy-line);padding:5px 10px;border-radius:6px;font-size:12px}
-  .icon-btn:hover{border-color:var(--gold);color:var(--gold-soft)}
+  .icon-btn{background:var(--bg);color:var(--navy);border:1px solid var(--navy-line);padding:5px 10px;border-radius:6px;font-size:12px}
+  .icon-btn:hover{border-color:var(--navy);background:var(--white)}
   .icon-btn.del:hover{border-color:var(--danger);color:var(--danger)}
 
-  .overlay{display:none;position:fixed;inset:0;background:rgba(4,10,22,.72);z-index:100;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(10,20,40,.55);z-index:100;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
   .overlay.show{display:flex}
-  .modal{width:100%;max-width:480px;background:var(--navy);border:1px solid var(--navy-line);border-radius:14px;padding:24px}
+  .modal{width:100%;max-width:480px;background:var(--white);border:1px solid var(--navy-line);border-radius:14px;padding:24px;box-shadow:0 8px 32px rgba(22,54,95,.12)}
   .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-  .modal-head h3{font-size:16px}
+  .modal-head h3{font-size:16px;color:var(--navy)}
   .modal-close{background:transparent;color:var(--muted);font-size:20px;line-height:1;padding:2px 8px}
-  .modal-close:hover{color:var(--white)}
+  .modal-close:hover{color:var(--navy)}
   .modal-foot{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
 
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-  .note{font-size:12px;color:var(--muted);background:var(--navy-dark);border:1px solid var(--navy-line);border-radius:8px;padding:12px 14px;margin-bottom:14px;line-height:1.6}
+  .note{font-size:12px;color:var(--muted);background:var(--bg);border:1px solid var(--navy-line);border-radius:8px;padding:12px 14px;margin-bottom:14px;line-height:1.6}
   .kv{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--navy-line);font-size:13px}
   .kv:last-child{border:none}
   .kv .k{color:var(--muted)}
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--navy-dark);padding:11px 20px;border-radius:8px;font-weight:600;font-size:13px;z-index:200;opacity:0;transition:opacity .25s;pointer-events:none}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);color:var(--white);padding:11px 20px;border-radius:8px;font-weight:600;font-size:13px;z-index:200;opacity:0;transition:opacity .25s;pointer-events:none}
   .toast.show{opacity:1}
 
   @media(max-width:860px){
@@ -144,15 +144,10 @@
       <div class="tag">Expert Guidance, Exceptional Journeys</div>
     </div>
     <div id="loginForm">
-      <div class="field"><label>Sign in as</label><select id="loginUser">
-        <option value="admin">Admin</option>
-        <option value="ce">Client Executive</option>
-        <option value="sm">Social Media Manager</option>
-      </select></div>
-      <div class="field"><label>Password</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Enter password"></div>
+      <div class="field"><label>Password</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Enter your password"></div>
       <button class="btn btn-block" id="loginBtn" onclick="login()">Sign In</button>
       <div class="login-err" id="loginErr"></div>
-      <div class="hint">Cloud-synced workspace &bull; admin and ce log in with their own accounts</div>
+      <div class="hint">EduVoyage private workspace &bull; cloud-synced</div>
     </div>
   </div>
 </div>
@@ -263,15 +258,11 @@ function roleFromEmail(email){
   return {role:"ce", name:email, email}; // unknown account treated as limited
 }
 async function login(){
-  const u = document.getElementById("loginUser").value.trim().toLowerCase();
   const p = document.getElementById("loginPass").value;
   const err = document.getElementById("loginErr");
   const btn = document.getElementById("loginBtn");
-  let email = u;
-  if(u==="admin") email = ADMIN_EMAIL;
-  else if(u==="ce") email = CE_EMAIL;
-  else if(u==="sm"||u==="social") email = SM_EMAIL;
-  if(!email || !p){ err.textContent="Enter username and password."; return; }
+  const email = ADMIN_EMAIL;
+  if(!p){ err.textContent="Enter your password."; return; }
   err.textContent="Signing in\u2026"; btn.disabled=true;
   try{
     const { data, error } = await sb.auth.signInWithPassword({ email, password:p });
@@ -296,7 +287,7 @@ async function logout(){
   session=null;
   document.getElementById("app").style.display="none";
   document.getElementById("login").style.display="flex";
-  document.getElementById("loginUser").value="admin";
+  
   document.getElementById("loginPass").value="";
 }
 
@@ -334,20 +325,15 @@ function onRealtime(table){
 
 /* ---------- module registry ---------- */
 const NAV = [
-  { key:"dashboard",    label:"Dashboard",            access:"admin",            group:"Overview" },
-  { key:"attendance",   label:"Attendance",           access:"all",              group:"Overview" },
-  { key:"clients",      label:"Client Work",          access:["admin","ce"],     group:"Operations" },
-  { key:"social",       label:"Social Media",         access:["admin","ce","sm"],group:"Operations" },
-  { key:"ceTasks",      label:"CE Management",         access:["admin","ce"],     group:"Operations" },
-  { key:"todos",        label:"My To-Dos",            access:["admin","ce"],     group:"Operations" },
-  { key:"ceReports",    label:"CE Reports",           access:["admin","ce"],     group:"Operations" },
-  { key:"webinars",     label:"Webinars",             access:["admin","ce"],     group:"Operations" },
-  { key:"services",     label:"Services & Pricing",   access:["admin","ce"],     group:"Operations" },
-  { key:"scholarships", label:"Scholarship Advisory", access:["admin","ce"],     group:"Operations" },
-  { key:"finances",     label:"Finances",             access:"admin",            group:"Private" },
-  { key:"personal",     label:"Personal Workspace",   access:"admin",            group:"Private" },
-  { key:"activity",     label:"Activity Log",         access:"all",              group:"Private" },
-  { key:"settings",     label:"Settings",             access:"all",              group:"System" }
+  { key:"dashboard",    label:"Dashboard",            group:"Overview" },
+  { key:"attendance",   label:"Attendance",           group:"Overview" },
+  { key:"clients",      label:"Client Work",          group:"Work" },
+  { key:"webinars",     label:"Webinars",             group:"Work" },
+  { key:"scholarships", label:"Scholarship Advisory", group:"Work" },
+  { key:"finances",     label:"Finances",             group:"Work" },
+  { key:"personal",     label:"Personal Workspace",   group:"Private" },
+  { key:"activity",     label:"Activity Log",         group:"Private" },
+  { key:"settings",     label:"Settings",             group:"System" }
 ];
 
 const ST = {
@@ -398,14 +384,13 @@ const CRUD = {
       {k:"notes",label:"Notes",type:"textarea"}
     ],
     cols:[{k:"task",label:"Task"},{k:"task_date",label:"Date"},{k:"status",label:"Status",pill:true},{k:"notes",label:"Notes"}]},
-  todos:{ table:"todos", title:"My To-Dos", addLabel:"Add To-Do",
+  todos:{ table:"todos", title:"To-Do", addLabel:"Add To-Do",
     fields:[
       {k:"task",label:"Task",type:"text",req:true},
       {k:"priority",label:"Priority",type:"select",opts:["High","Medium","Low"]},
-      {k:"status",label:"Status",type:"select",opts:ST.todo},
-      {k:"due_date",label:"Due Date",type:"date"}
+      {k:"status",label:"Status",type:"select",opts:ST.todo}
     ],
-    cols:[{k:"task",label:"Task"},{k:"priority",label:"Priority",prio:true},{k:"status",label:"Status",pill:true},{k:"due_date",label:"Due"}]},
+    cols:[{k:"task",label:"Task"},{k:"priority",label:"Priority",prio:true},{k:"status",label:"Status",pill:true}]},
   ceReports:{ table:"ce_reports", title:"CE Reports", addLabel:"Add Report", export:true,
     fields:[
       {k:"week",label:"Week",type:"text",req:true},
@@ -488,12 +473,7 @@ function startApp(){
   current = session.role==="admin" ? "dashboard" : "attendance";
   show(current);
 }
-function canAccess(item){
-  if(session.role==="admin") return true;
-  if(item.access==="all") return true;
-  if(Array.isArray(item.access)) return item.access.includes(session.role);
-  return false;
-}
+function canAccess(item){ return true; }
 function buildNav(){
   let html="", last="";
   NAV.filter(canAccess).forEach(it=>{
@@ -524,7 +504,6 @@ async function show(key){
     else if(key==="personal")    html=await viewPersonal();
     else if(key==="activity")    html=await viewActivity();
     else if(key==="settings")    html=await viewSettings();
-    else if(key==="ceReports")   html=await viewCEReports();
     else if(CRUD[key])           html=await viewCRUD(key);
     else html="<div class='panel'><div class='empty'>Module not found.</div></div>";
     if(current===key){ c.innerHTML=html; window.scrollTo(0,0); }
@@ -546,25 +525,35 @@ function prioPill(val){ const v=String(val||"").toLowerCase(); let cls="muted"; 
 
 /* ---------- Dashboard ---------- */
 async function viewDashboard(){
-  const [clients,revenue,todos,ceTasks,activity]=await Promise.all([
-    fetchTable("clients"),fetchTable("revenue"),fetchTable("todos"),fetchTable("ce_tasks"),fetchTable("activity_log")
+  const now=new Date();
+  const monthStr=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
+  const monthLabel=now.toLocaleString("en-GB",{month:"long",year:"numeric"});
+  const [clients,revenue,expenses,activity]=await Promise.all([
+    fetchTable("clients"),fetchTable("revenue"),fetchTable("expenses"),fetchTable("activity_log")
   ]);
   const activeClients=clients.filter(c=>String(c.status).toLowerCase()!=="completed").length;
-  const totalRevenue=revenue.reduce((s,r)=>s+(Number(r.amount)||0),0);
   const outstanding=clients.reduce((s,c)=>s+(Number(c.balance)||0),0);
-  const activeTasks=todos.filter(t=>String(t.status).toLowerCase()!=="done").length+ceTasks.filter(t=>String(t.status).toLowerCase()!=="done").length;
-  const recent=activity.slice(0,12);
-  const rows=recent.length?recent.map(a=>"<tr><td style='white-space:nowrap;color:var(--muted)'>"+esc(nowStamp(a.timestamp))+"</td><td>"+esc(a.user_name)+"</td><td>"+esc(a.action)+"</td><td style='color:var(--muted)'>"+esc(a.module)+(a.details?" \u2014 "+esc(a.details):"")+"</td></tr>").join(""):"<tr><td colspan='4' class='empty'>No activity yet.</td></tr>";
+  const mRev=revenue.filter(r=>String(r.date||"").startsWith(monthStr));
+  const mExp=expenses.filter(e=>String(e.date||"").startsWith(monthStr));
+  const mRevTotal=mRev.reduce((s,r)=>s+(Number(r.amount)||0),0);
+  const mExpTotal=mExp.reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const mNet=mRevTotal-mExpTotal;
+  const recent=activity.slice(0,10);
+  const rows=recent.length?recent.map(a=>"<tr><td style='white-space:nowrap;color:var(--muted)'>"+esc(nowStamp(a.timestamp))+"</td><td>"+esc(a.action)+"</td><td style='color:var(--muted)'>"+esc(a.module)+(a.details?" \u2014 "+esc(a.details):"")+"</td></tr>").join(""):"<tr><td colspan='3' class='empty'>No activity yet.</td></tr>";
   return `
     <div class="stats">
       <div class="stat"><div class="label">Active Clients</div><div class="value">${activeClients}</div></div>
-      <div class="stat"><div class="label">Total Revenue</div><div class="value gold">${naira(totalRevenue)}</div></div>
+      <div class="stat"><div class="label">${monthLabel} Revenue</div><div class="value gold">${naira(mRevTotal)}</div></div>
+      <div class="stat"><div class="label">${monthLabel} Expenses</div><div class="value">${naira(mExpTotal)}</div></div>
       <div class="stat"><div class="label">Outstanding Balance</div><div class="value">${naira(outstanding)}</div></div>
-      <div class="stat"><div class="label">Active Tasks</div><div class="value">${activeTasks}</div></div>
     </div>
     <div class="panel">
-      <div class="panel-head"><div><h3>Recent Activity</h3><div class="panel-sub">Live across all devices</div></div></div>
-      <div class="table-wrap"><table><thead><tr><th>When</th><th>User</th><th>Action</th><th>Details</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="panel-head"><div><h3>${monthLabel} — Net</h3><div class="panel-sub">Revenue minus expenses this month</div></div>
+      <span style="font-size:22px;font-weight:700;color:${mNet>=0?"var(--ok)":"var(--danger)"}">${naira(mNet)}</span></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div><h3>Recent Activity</h3><div class="panel-sub">Live log</div></div></div>
+      <div class="table-wrap"><table><thead><tr><th>When</th><th>Action</th><th>Details</th></tr></thead><tbody>${rows}</tbody></table></div>
     </div>`;
 }
 
@@ -721,7 +710,15 @@ function fallbackCopy(text){ const ta=document.createElement("textarea"); ta.val
 
 /* ---------- Finances (admin) ---------- */
 async function viewFinances(){
+  const now=new Date();
+  const monthStr=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
+  const monthLabel=now.toLocaleString("en-GB",{month:"long",year:"numeric"});
   const [revenue,expenses,clients]=await Promise.all([fetchTable("revenue"),fetchTable("expenses"),fetchTable("clients")]);
+  const mRev=revenue.filter(r=>String(r.date||"").startsWith(monthStr));
+  const mExp=expenses.filter(e=>String(e.date||"").startsWith(monthStr));
+  const mRevTotal=mRev.reduce((s,r)=>s+(Number(r.amount)||0),0);
+  const mExpTotal=mExp.reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const mNet=mRevTotal-mExpTotal;
   const totalRev=revenue.reduce((s,r)=>s+(Number(r.amount)||0),0);
   const totalExp=expenses.reduce((s,e)=>s+(Number(e.amount)||0),0);
   const net=totalRev-totalExp;
@@ -729,11 +726,18 @@ async function viewFinances(){
   const revRows=revenue.length?revenue.map(r=>("<tr><td>"+esc(r.date)+"</td><td>"+esc(r.client)+"</td><td>"+esc(r.service)+"</td><td>"+naira(r.amount)+"</td><td><div class='row-actions'><button class='icon-btn' onclick=\"openForm('revenue','"+r.id+"')\">Edit</button><button class='icon-btn del' onclick=\"removeItem('revenue','"+r.id+"','finances')\">Delete</button></div></td></tr>")).join(""):"<tr><td colspan='5' class='empty'>No revenue recorded.</td></tr>";
   const expRows=expenses.length?expenses.map(e=>("<tr><td>"+esc(e.date)+"</td><td>"+esc(e.category)+"</td><td>"+esc(e.description)+"</td><td>"+naira(e.amount)+"</td><td><div class='row-actions'><button class='icon-btn' onclick=\"openForm('expenses','"+e.id+"')\">Edit</button><button class='icon-btn del' onclick=\"removeItem('expenses','"+e.id+"','finances')\">Delete</button></div></td></tr>")).join(""):"<tr><td colspan='5' class='empty'>No expenses recorded.</td></tr>";
   return `
+    <div class="section-label">${monthLabel}</div>
+    <div class="stats">
+      <div class="stat"><div class="label">Revenue This Month</div><div class="value gold">${naira(mRevTotal)}</div></div>
+      <div class="stat"><div class="label">Expenses This Month</div><div class="value">${naira(mExpTotal)}</div></div>
+      <div class="stat"><div class="label">Net This Month</div><div class="value ${mNet>=0?'gold':''}">${naira(mNet)}</div></div>
+      <div class="stat"><div class="label">Outstanding (Clients)</div><div class="value">${naira(outstanding)}</div></div>
+    </div>
+    <div class="section-label" style="margin-top:8px">All History</div>
     <div class="stats">
       <div class="stat"><div class="label">Total Revenue</div><div class="value gold">${naira(totalRev)}</div></div>
       <div class="stat"><div class="label">Total Expenses</div><div class="value">${naira(totalExp)}</div></div>
-      <div class="stat"><div class="label">Net</div><div class="value ${net>=0?'gold':''}">${naira(net)}</div></div>
-      <div class="stat"><div class="label">Outstanding (Clients)</div><div class="value">${naira(outstanding)}</div></div>
+      <div class="stat"><div class="label">All-Time Net</div><div class="value ${net>=0?'gold':''}">${naira(net)}</div></div>
     </div>
     <div class="panel"><div class="panel-head"><div><h3>Revenue</h3></div><button class="btn" onclick="openForm('revenue',null)">Add Revenue</button></div>
       <div class="table-wrap"><table><thead><tr><th>Date</th><th>Client</th><th>Service</th><th>Amount</th><th style="text-align:right">Actions</th></tr></thead><tbody>${revRows}</tbody></table></div></div>
@@ -743,12 +747,27 @@ async function viewFinances(){
 
 /* ---------- Personal Workspace (admin) ---------- */
 async function viewPersonal(){
-  const [edu,waka]=await Promise.all([fetchTable("personal_eduvoyage"),fetchTable("personal_waka")]);
-  const eduRows=edu.length?edu.map(n=>("<tr><td style='white-space:nowrap;color:var(--muted)'>"+esc(n.note_date)+"</td><td>"+esc(n.note)+"</td><td><div class='row-actions'><button class='icon-btn' onclick=\"openForm('personal_eduvoyage','"+n.id+"')\">Edit</button><button class='icon-btn del' onclick=\"removeItem('personal_eduvoyage','"+n.id+"','personal')\">Delete</button></div></td></tr>")).join(""):"<tr><td colspan='3' class='empty'>No notes yet.</td></tr>";
-  const wakaRows=waka.length?waka.map(w=>("<tr><td style='white-space:nowrap;color:var(--muted)'>"+esc(w.content_date)+"</td><td>"+pill(w.content_type)+"</td><td>"+esc(w.content)+"</td><td><div class='row-actions'><button class='icon-btn' onclick=\"openForm('personal_waka','"+w.id+"')\">Edit</button><button class='icon-btn del' onclick=\"removeItem('personal_waka','"+w.id+"','personal')\">Delete</button></div></td></tr>")).join(""):"<tr><td colspan='4' class='empty'>No content yet.</td></tr>";
+  const [todos,plans,waka]=await Promise.all([fetchTable("todos"),fetchTable("personal_eduvoyage"),fetchTable("personal_waka")]);
+  const todoRows=todos.length?todos.map(t=>(
+    "<tr><td>"+esc(t.task)+"</td><td>"+prioPill(t.priority)+"</td><td>"+pill(t.status)+"</td>"+
+    "<td><div class='row-actions'><button class='icon-btn' onclick=\"openForm('todos','"+t.id+"')\">Edit</button>"+
+    "<button class='icon-btn del' onclick=\"removeItem('todos','"+t.id+"','personal')\">Delete</button></div></td></tr>"
+  )).join(""):"<tr><td colspan='4' class='empty'>No to-dos yet. Use Add To-Do.</td></tr>";
+  const planRows=plans.length?plans.map(n=>(
+    "<tr><td style='white-space:nowrap;color:var(--muted)'>"+esc(n.note_date)+"</td><td>"+esc(n.note)+"</td>"+
+    "<td><div class='row-actions'><button class='icon-btn' onclick=\"openForm('personal_eduvoyage','"+n.id+"')\">Edit</button>"+
+    "<button class='icon-btn del' onclick=\"removeItem('personal_eduvoyage','"+n.id+"','personal')\">Delete</button></div></td></tr>"
+  )).join(""):"<tr><td colspan='3' class='empty'>No plans yet. Use Add Plan.</td></tr>";
+  const wakaRows=waka.length?waka.map(w=>(
+    "<tr><td style='white-space:nowrap;color:var(--muted)'>"+esc(w.content_date)+"</td><td>"+pill(w.content_type)+"</td><td>"+esc(w.content)+"</td>"+
+    "<td><div class='row-actions'><button class='icon-btn' onclick=\"openForm('personal_waka','"+w.id+"')\">Edit</button>"+
+    "<button class='icon-btn del' onclick=\"removeItem('personal_waka','"+w.id+"','personal')\">Delete</button></div></td></tr>"
+  )).join(""):"<tr><td colspan='4' class='empty'>No content yet.</td></tr>";
   return `
-    <div class="panel"><div class="panel-head"><div><h3>Eduvoyage Business</h3><div class="panel-sub">Private notes &mdash; admin only.</div></div><button class="btn" onclick="openForm('personal_eduvoyage',null)">Add Note</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Note</th><th style="text-align:right">Actions</th></tr></thead><tbody>${eduRows}</tbody></table></div></div>
+    <div class="panel"><div class="panel-head"><div><h3>To-Dos</h3><div class="panel-sub">Current tasks &mdash; what needs to get done now.</div></div><button class="btn" onclick="openForm('todos',null)">Add To-Do</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Task</th><th>Priority</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead><tbody>${todoRows}</tbody></table></div></div>
+    <div class="panel"><div class="panel-head"><div><h3>Future Plans</h3><div class="panel-sub">Business goals, ideas and things to plan for later.</div></div><button class="btn" onclick="openForm('personal_eduvoyage',null)">Add Plan</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Plan / Goal / Idea</th><th style="text-align:right">Actions</th></tr></thead><tbody>${planRows}</tbody></table></div></div>
     <div class="panel"><div class="panel-head"><div><h3>WakaWithAmi</h3><div class="panel-sub">Personal travel brand &mdash; scripts, ideas, drafts.</div></div><button class="btn" onclick="openForm('personal_waka',null)">Add Content</button></div>
       <div class="table-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Content</th><th style="text-align:right">Actions</th></tr></thead><tbody>${wakaRows}</tbody></table></div></div>`;
 }
@@ -766,7 +785,7 @@ async function viewActivity(){
 /* ---------- Settings ---------- */
 async function viewSettings(){
   const admin=session.role==="admin";
-  const roleLong = admin?"Administrator":(session.role==="ce"?"Client Executive":"Social Media Manager");
+  const roleLong = "Administrator";
   return `
     <div class="grid2">
       <div class="panel"><div class="panel-head"><h3>Workspace Info</h3></div>
@@ -776,7 +795,7 @@ async function viewSettings(){
         <div class="kv"><span class="k">Storage</span><span>Supabase Cloud (live sync)</span></div>
       </div>
       <div class="panel"><div class="panel-head"><h3>Change Password</h3></div>
-        <div class="note">Set your own private password. Only you will know it after this.</div>
+        <div class="note">Change your workspace password. You can also reset it via Supabase if needed.</div>
         <div class="field"><label>New Password</label><input id="pw1" type="password" autocomplete="new-password" placeholder="At least 6 characters"></div>
         <div class="field"><label>Confirm New Password</label><input id="pw2" type="password" autocomplete="new-password" placeholder="Repeat new password"></div>
         <div id="pwMsg" style="font-size:13px;margin-bottom:8px;color:var(--muted)"></div>
@@ -942,7 +961,7 @@ async function clearAll(){
 document.getElementById("overlay").addEventListener("click",e=>{ if(e.target.id==="overlay") closeModal(); });
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
 document.getElementById("loginPass").addEventListener("keydown",e=>{ if(e.key==="Enter") login(); });
-document.getElementById("loginUser").addEventListener("keydown",e=>{ if(e.key==="Enter") document.getElementById("loginPass").focus(); });
+/* loginUser removed - single user login */
 
 /* ---------- init ---------- */
 function showSetup(){
