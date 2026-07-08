@@ -657,8 +657,18 @@ async function viewCRUD(key){
       ${sectionTable(key, done, {parent:key, emptyMsg:"No completed clients yet."})}</div>`;
   }
 
-  // ----- Generic single-table page -----
-  return `<div class="panel">${headHtml}${sectionTable(key, data, {parent:key, emptyMsg:"Nothing here yet. Use \u201C"+cfg.addLabel+"\u201D to begin."})}</div>`;
+  // ----- Webinars: Upcoming / Past split -----
+  if(key==="webinars"){
+    const today=todayISO();
+    const upcoming=data.filter(w=>String(w.event_date||"")>=today);
+    const past=data.filter(w=>String(w.event_date||"")<today);
+    return `<div class="panel">
+      <div class="panel-head"><div><h3>Webinars</h3></div><button class="btn" onclick="openForm('webinars',null)">Add Webinar</button></div>
+      <div class="section-label">Upcoming (${upcoming.length})</div>
+      ${sectionTable("webinars",upcoming,{parent:"webinars",emptyMsg:"No upcoming webinars. Use Add Webinar."})}
+      <div class="section-label" style="margin-top:24px">Past (${past.length})</div>
+      ${sectionTable("webinars",past,{parent:"webinars",emptyMsg:"No past webinars yet."})}</div>`;
+  }
 }
 
 /* ---------- CE Reports (with export) ---------- */
@@ -733,11 +743,22 @@ async function viewFinances(){
       <div class="stat"><div class="label">Net This Month</div><div class="value ${mNet>=0?'gold':''}">${naira(mNet)}</div></div>
       <div class="stat"><div class="label">Outstanding (Clients)</div><div class="value">${naira(outstanding)}</div></div>
     </div>
-    <div class="section-label" style="margin-top:8px">All History</div>
-    <div class="stats">
-      <div class="stat"><div class="label">Total Revenue</div><div class="value gold">${naira(totalRev)}</div></div>
-      <div class="stat"><div class="label">Total Expenses</div><div class="value">${naira(totalExp)}</div></div>
-      <div class="stat"><div class="label">All-Time Net</div><div class="value ${net>=0?'gold':''}">${naira(net)}</div></div>
+    <div class="section-label" style="margin-top:8px">Monthly Breakdown</div>
+    <div class="panel" style="margin-bottom:20px">
+      <div class="table-wrap"><table><thead><tr><th>Month</th><th>Revenue</th><th>Expenses</th><th>Net</th></tr></thead><tbody>
+      ${(()=>{
+        const months={};
+        revenue.forEach(r=>{ const m=String(r.date||"").slice(0,7); if(m) { if(!months[m]) months[m]={rev:0,exp:0}; months[m].rev+=(Number(r.amount)||0); } });
+        expenses.forEach(e=>{ const m=String(e.date||"").slice(0,7); if(m) { if(!months[m]) months[m]={rev:0,exp:0}; months[m].exp+=(Number(e.amount)||0); } });
+        const sorted=Object.keys(months).sort().reverse();
+        if(!sorted.length) return "<tr><td colspan='4' class='empty'>No data yet.</td></tr>";
+        return sorted.map(m=>{
+          const d=months[m]; const net=d.rev-d.exp;
+          const label=new Date(m+"-01").toLocaleString("en-GB",{month:"long",year:"numeric"});
+          return "<tr><td style='font-weight:600'>"+esc(label)+"</td><td style='color:var(--gold-soft)'>"+naira(d.rev)+"</td><td>"+naira(d.exp)+"</td><td style='font-weight:600;color:"+(net>=0?"var(--ok)":"var(--danger)")+"'>"+naira(net)+"</td></tr>";
+        }).join("");
+      })()}
+      </tbody></table></div>
     </div>
     <div class="panel"><div class="panel-head"><div><h3>Revenue</h3></div><button class="btn" onclick="openForm('revenue',null)">Add Revenue</button></div>
       <div class="table-wrap"><table><thead><tr><th>Date</th><th>Client</th><th>Service</th><th>Amount</th><th style="text-align:right">Actions</th></tr></thead><tbody>${revRows}</tbody></table></div></div>
