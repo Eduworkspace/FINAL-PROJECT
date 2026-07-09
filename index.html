@@ -353,17 +353,19 @@ const CRUD = {
   clients:{ table:"clients", title:"Client Work", addLabel:"Add Client",
     fields:[
       {k:"client_name",label:"Client Name",type:"text",req:true},
+      {k:"phone",label:"Phone Number",type:"text"},
       {k:"invoice_no",label:"Invoice No",type:"text"},
       {k:"service",label:"Service",type:"text"},
       {k:"country",label:"Country",type:"text"},
       {k:"status",label:"Status",type:"select",opts:ST.client},
-      {k:"assigned_ce",label:"Assigned To",type:"select",opts:CE_OPTS},
+      {k:"last_followup",label:"Last Follow-Up",type:"date"},
       {k:"google_drive_link",label:"Google Drive Link",type:"text"},
       {k:"balance",label:"Balance (\u20A6)",type:"number"}
     ],
     cols:[
-      {k:"invoice_no",label:"Invoice No"},{k:"client_name",label:"Client"},{k:"service",label:"Service"},{k:"country",label:"Country"},
-      {k:"status",label:"Status",pill:true},{k:"assigned_ce",label:"Assigned",map:CE_MAP},
+      {k:"invoice_no",label:"Inv#"},{k:"client_name",label:"Client"},{k:"phone",label:"Phone"},
+      {k:"service",label:"Service"},{k:"country",label:"Country"},
+      {k:"status",label:"Status",pill:true},{k:"last_followup",label:"Last Follow-Up"},
       {k:"google_drive_link",label:"Drive",link:true},{k:"balance",label:"Balance",money:true}
     ]},
   social:{ table:"social_media", title:"Social Media", addLabel:"Add Post",
@@ -647,14 +649,18 @@ async function viewCRUD(key){
 
   // ----- Clients: Active / Completed split -----
   if(key==="clients"){
-    const isDone=(c)=>String(c.status||"").toLowerCase()==="completed";
-    const active=data.filter(c=>!isDone(c));
-    const done=data.filter(isDone);
+    const isCompleted=(c)=>String(c.status||"").toLowerCase()==="completed";
+    const isRejected=(c)=>String(c.status||"").toLowerCase()==="visa rejected";
+    const active=data.filter(c=>!isCompleted(c)&&!isRejected(c));
+    const rejected=data.filter(isRejected);
+    const done=data.filter(isCompleted);
     return `<div class="panel">${headHtml}
       <div class="section-label">Active Clients (${active.length})</div>
-      ${sectionTable(key, active, {parent:key, emptyMsg:"No active clients. Use \u201C"+cfg.addLabel+"\u201D to begin."})}
-      <div class="section-label" style="margin-top:24px">Completed (${done.length})</div>
-      ${sectionTable(key, done, {parent:key, emptyMsg:"No completed clients yet."})}</div>`;
+      ${sectionTable(key,active,{parent:key,emptyMsg:"No active clients. Use \u201CAdd Client\u201D to begin."})}
+      <div class="section-label" style="margin-top:24px;border-left-color:var(--danger);color:var(--danger)">Visa Rejected \u2014 No Reapplication (${rejected.length})</div>
+      ${sectionTable(key,rejected,{parent:key,emptyMsg:"No rejected cases without reapplication."})}
+      <div class="section-label" style="margin-top:24px;border-left-color:var(--ok);color:var(--ok)">Completed (${done.length})</div>
+      ${sectionTable(key,done,{parent:key,emptyMsg:"No completed clients yet."})}</div>`;
   }
 
   // ----- Webinars: Upcoming / Past split -----
@@ -946,7 +952,7 @@ function csvCell(v){ return '"'+String(v==null?"":v).replace(/"/g,'""')+'"'; }
 async function exportCSV(){
   toast("Preparing CSV\u2026");
   const blocks={
-    CLIENTS:["invoice_no","client_name","service","country","status","assigned_ce","balance","google_drive_link"],
+    CLIENTS:["invoice_no","client_name","phone","service","country","status","last_followup","balance","google_drive_link"],
     ATTENDANCE:["name","date","time_in"],
     "SOCIAL MEDIA":["brand","platform","content_type","topic","post_date","status"],
     "CE MANAGEMENT":["task","task_date","status","notes"],
