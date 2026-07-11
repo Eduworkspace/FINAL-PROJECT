@@ -218,10 +218,10 @@ let rtTimer = null;
 
 const ALL_TABLES = ["clients","attendance","social_media","ce_tasks","todos","ce_reports",
   "webinars","services","scholarships","revenue","expenses","personal_eduvoyage","personal_waka","activity_log",
-  "weekly_duties","competitor_watch","social_performance"];
+  "weekly_duties","competitor_watch","social_performance","service_info"];
 const HAS_CREATED_BY = new Set(["clients","social_media","todos","ce_reports"]);
 const HAS_UPDATED_AT = new Set(["clients","social_media","ce_tasks","todos","ce_reports","webinars","services","scholarships","revenue","expenses","personal_eduvoyage","personal_waka",
-  "weekly_duties","competitor_watch","social_performance"]);
+  "weekly_duties","competitor_watch","social_performance","service_info"]);
 
 /* ---------- helpers ---------- */
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
@@ -330,6 +330,7 @@ const NAV = [
   { key:"clients",      label:"Client Work",          group:"Work" },
   { key:"webinars",     label:"Webinars",             group:"Work" },
   { key:"scholarships", label:"Scholarship Advisory", group:"Work" },
+  { key:"services",     label:"Services & Info",      group:"Work" },
   { key:"finances",     label:"Finances",             group:"Work" },
   { key:"personal",     label:"Personal Workspace",   group:"Private" },
   { key:"activity",     label:"Activity Log",         group:"Private" },
@@ -459,7 +460,46 @@ const CRUD = {
       {k:"lead_generating_video",label:"Lead-Generating Video",type:"text"},
       {k:"notes",label:"Notes",type:"textarea"}
     ],
-    cols:[{k:"month",label:"Month"},{k:"brand",label:"Brand"},{k:"best_performing_video",label:"Best Performing"},{k:"most_saved_video",label:"Most Saved"},{k:"most_shared_video",label:"Most Shared"},{k:"most_comments_video",label:"Most Comments"},{k:"lead_generating_video",label:"Lead-Generating"}]}
+    cols:[{k:"month",label:"Month"},{k:"brand",label:"Brand"},{k:"best_performing_video",label:"Best Performing"},{k:"most_saved_video",label:"Most Saved"},{k:"most_shared_video",label:"Most Shared"},{k:"most_comments_video",label:"Most Comments"},{k:"lead_generating_video",label:"Lead-Generating"}]},
+  revenueStudy:{ table:"revenue", title:"Study Abroad Income", addLabel:"Add Income",
+    fields:[
+      {k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},
+      {k:"service",label:"Service / Description",type:"text"},
+      {k:"amount",label:"Amount Received (\u20A6)",type:"number",req:true}
+    ],
+    cols:[{k:"date",label:"Date"},{k:"client",label:"Client"},{k:"service",label:"Service"},{k:"amount",label:"Amount",money:true}]},
+  revenueTours:{ table:"revenue", title:"Travel Package", addLabel:"Add Package",
+    fields:[
+      {k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},
+      {k:"service",label:"Package Description",type:"text"},
+      {k:"amount",label:"Package Price Charged (\u20A6)",type:"number",req:true},
+      {k:"cost",label:"Total Amount Spent on Package (\u20A6)",type:"number"}
+    ],
+    cols:[{k:"date",label:"Date"},{k:"client",label:"Client"},{k:"service",label:"Package"},{k:"amount",label:"Charged",money:true},{k:"cost",label:"Spent",money:true}]},
+  revenueFlights:{ table:"revenue", title:"Flight Booking", addLabel:"Add Flight",
+    fields:[
+      {k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},
+      {k:"service",label:"Route / Destination",type:"text"},
+      {k:"amount",label:"Amount Charged (\u20A6)",type:"number",req:true},
+      {k:"cost",label:"Ticket Cost (\u20A6)",type:"number"}
+    ],
+    cols:[{k:"date",label:"Date"},{k:"client",label:"Client"},{k:"service",label:"Route"},{k:"amount",label:"Charged",money:true},{k:"cost",label:"Ticket Cost",money:true}]},
+  serviceStudy:{ table:"service_info", title:"Study Abroad Services", addLabel:"Add Country / Service",
+    fields:[
+      {k:"country",label:"Country",type:"text",req:true},
+      {k:"service_name",label:"Service Name / Visa Type",type:"text"},
+      {k:"requirements",label:"Requirements (paste full details here)",type:"textarea"},
+      {k:"notes",label:"Processing Time / Notes",type:"textarea"}
+    ],
+    cols:[{k:"country",label:"Country"},{k:"service_name",label:"Service"},{k:"requirements",label:"Requirements"},{k:"notes",label:"Notes"}]},
+  serviceTours:{ table:"service_info", title:"Travel & Tours Services", addLabel:"Add Destination",
+    fields:[
+      {k:"country",label:"Destination / Country",type:"text",req:true},
+      {k:"service_name",label:"Package / Tour Name",type:"text"},
+      {k:"requirements",label:"What\u2019s Included / Requirements",type:"textarea"},
+      {k:"notes",label:"Price Range / Notes",type:"textarea"}
+    ],
+    cols:[{k:"country",label:"Destination"},{k:"service_name",label:"Package"},{k:"requirements",label:"Details"},{k:"notes",label:"Notes"}]}
 };
 
 /* ---------- boot ---------- */
@@ -503,6 +543,7 @@ async function show(key){
     if(key==="dashboard")        html=await viewDashboard();
     else if(key==="attendance")  html=await viewAttendance();
     else if(key==="finances")    html=await viewFinances();
+    else if(key==="services")    html=await viewServices();
     else if(key==="personal")    html=await viewPersonal();
     else if(key==="activity")    html=await viewActivity();
     else if(key==="settings")    html=await viewSettings();
@@ -724,7 +765,36 @@ function copyText(text){
 }
 function fallbackCopy(text){ const ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy");toast("Copied to clipboard");}catch(e){alert(text);} document.body.removeChild(ta); }
 
-/* ---------- Finances (admin) ---------- */
+/* ---------- Services & Info ---------- */
+async function viewServices(){
+  const all=await fetchTable("service_info");
+  const studyRows=all.filter(r=>String(r.type||"")==="Study Abroad");
+  const toursRows=all.filter(r=>String(r.type||"")==="Travel & Tours");
+  function serviceTable(rows, editKey){
+    if(!rows.length) return "<tr><td colspan='5' class='empty'>No entries yet. Use the Add button to get started.</td></tr>";
+    return rows.map(r=>{
+      const req=String(r.requirements||"");
+      const preview=req.length>120?req.slice(0,120)+"\u2026":req;
+      return "<tr>"+
+        "<td style='font-weight:600;white-space:nowrap'>"+esc(r.country||"")+"</td>"+
+        "<td>"+esc(r.service_name||"")+"</td>"+
+        "<td style='font-size:12px;color:var(--muted);max-width:260px'>"+esc(preview)+"</td>"+
+        "<td>"+esc(r.notes||"")+"</td>"+
+        "<td><div class='row-actions'>"+
+          "<button class='icon-btn' style='background:var(--gold);color:#fff;border-color:var(--gold)' onclick=\"copyToClip("+JSON.stringify(req)+")\">Copy</button>"+
+          "<button class='icon-btn' onclick=\"openForm('"+editKey+"','"+r.id+"')\">Edit</button>"+
+          "<button class='icon-btn del' onclick=\"removeItem('service_info','"+r.id+"','services')\">Delete</button>"+
+        "</div></td></tr>";
+    }).join("");
+  }
+  return `
+    <div class="panel"><div class="panel-head"><div><h3>Study Abroad — Countries &amp; Requirements</h3><div class="panel-sub">Tap <b>Copy</b> to copy requirements straight to clipboard for WhatsApp or email.</div></div><button class="btn" onclick="openForm('serviceStudy',null)">Add Country / Service</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Country</th><th>Service / Visa</th><th>Requirements (preview)</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody>${serviceTable(studyRows,"serviceStudy")}</tbody></table></div></div>
+    <div class="panel"><div class="panel-head"><div><h3>Travel &amp; Tours — Destinations &amp; Packages</h3><div class="panel-sub">Tap <b>Copy</b> to copy package details or requirements instantly.</div></div><button class="btn" onclick="openForm('serviceTours',null)">Add Destination</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Destination</th><th>Package</th><th>Details (preview)</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody>${serviceTable(toursRows,"serviceTours")}</tbody></table></div></div>`;
+}
 function streamRows(data, stream, editKey){
   const rows=data.filter(r=>String(r.stream||"")=== stream);
   if(!rows.length) return "<tr><td colspan='6' class='empty'>No entries yet.</td></tr>";
@@ -733,7 +803,7 @@ function streamRows(data, stream, editKey){
     return "<tr><td style='white-space:nowrap'>"+esc(r.date||"")+"</td><td>"+esc(r.client||"")+"</td><td>"+esc(r.service||"")+"</td>"+
       "<td style='color:var(--gold-soft)'>"+naira(r.amount)+"</td>"+
       (stream!=="Study Abroad"?"<td>"+naira(r.cost)+"</td><td style='font-weight:600;color:"+(profit>=0?"var(--ok)":"var(--danger)")+"'>"+naira(profit)+"</td>":"<td colspan='2'></td>")+
-      "<td><div class='row-actions'><button class='icon-btn' onclick=\"openFinanceForm('"+editKey+"','"+r.id+"')\">Edit</button>"+
+      "<td><div class='row-actions'><button class='icon-btn' onclick=\"openForm('"+editKey+"','"+r.id+"')\">Edit</button>"+
       "<button class='icon-btn del' onclick=\"removeItem('revenue','"+r.id+"','finances')\">Delete</button></div></td></tr>";
   }).join("");
 }
@@ -804,17 +874,17 @@ async function viewFinances(){
       <tbody>${breakdownRows}</tbody></table></div>
     </div>
 
-    <div class="panel"><div class="panel-head"><div><h3>Eduvoyage Ltd — Study Abroad</h3><div class="panel-sub">Processing fees &amp; school applications</div></div><button class="btn" onclick="openFinanceForm('study',null)">Add Income</button></div>
+    <div class="panel"><div class="panel-head"><div><h3>Eduvoyage Ltd — Study Abroad</h3><div class="panel-sub">Processing fees &amp; school applications</div></div><button class="btn" onclick="openForm('revenueStudy',null)">Add Income</button></div>
       <div class="table-wrap"><table><thead><tr><th>Date</th><th>Client</th><th>Service</th><th>Amount Received</th><th colspan="2"></th><th style="text-align:right">Actions</th></tr></thead>
-      <tbody>${streamRows(revenue,"Study Abroad","study")}</tbody></table></div></div>
+      <tbody>${streamRows(revenue,"Study Abroad","revenueStudy")}</tbody></table></div></div>
 
-    <div class="panel"><div class="panel-head"><div><h3>Eduvoyage Travel &amp; Tours</h3><div class="panel-sub">Holiday packages &amp; tours</div></div><button class="btn" onclick="openFinanceForm('tours',null)">Add Package</button></div>
+    <div class="panel"><div class="panel-head"><div><h3>Eduvoyage Travel &amp; Tours</h3><div class="panel-sub">Holiday packages &amp; tours</div></div><button class="btn" onclick="openForm('revenueTours',null)">Add Package</button></div>
       <div class="table-wrap"><table><thead><tr><th>Date</th><th>Client</th><th>Package</th><th>Charged</th><th>Spent</th><th>Profit</th><th style="text-align:right">Actions</th></tr></thead>
-      <tbody>${streamRows(revenue,"Travel & Tours","tours")}</tbody></table></div></div>
+      <tbody>${streamRows(revenue,"Travel & Tours","revenueTours")}</tbody></table></div></div>
 
-    <div class="panel"><div class="panel-head"><div><h3>Flight Bookings</h3><div class="panel-sub">Ticket revenue &amp; profit</div></div><button class="btn" onclick="openFinanceForm('flights',null)">Add Flight</button></div>
+    <div class="panel"><div class="panel-head"><div><h3>Flight Bookings</h3><div class="panel-sub">Ticket revenue &amp; profit</div></div><button class="btn" onclick="openForm('revenueFlights',null)">Add Flight</button></div>
       <div class="table-wrap"><table><thead><tr><th>Date</th><th>Client</th><th>Route</th><th>Charged</th><th>Ticket Cost</th><th>Profit</th><th style="text-align:right">Actions</th></tr></thead>
-      <tbody>${streamRows(revenue,"Flights","flights")}</tbody></table></div></div>
+      <tbody>${streamRows(revenue,"Flights","revenueFlights")}</tbody></table></div></div>
 
     <div class="panel"><div class="panel-head"><div><h3>Business Expenses</h3><div class="panel-sub">Running costs &amp; overheads</div></div><button class="btn" onclick="openForm('expenses',null)">Add Expense</button></div>
       <div class="table-wrap"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th style="text-align:right">Actions</th></tr></thead>
@@ -825,25 +895,30 @@ async function viewFinances(){
 async function openFinanceForm(streamKey, id){
   const streamMap={study:"Study Abroad",tours:"Travel & Tours",flights:"Flights"};
   const stream=streamMap[streamKey]||"Study Abroad";
-  const fields={
-    study:[{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Service / Description",type:"text"},{k:"amount",label:"Amount Received (₦)",type:"number",req:true}],
-    tours:[{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Package Description",type:"text"},{k:"amount",label:"Package Price Charged (₦)",type:"number",req:true},{k:"cost",label:"Total Amount Spent on Package (₦)",type:"number"}],
-    flights:[{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Route / Destination",type:"text"},{k:"amount",label:"Amount Charged (₦)",type:"number",req:true},{k:"cost",label:"Ticket Cost (₦)",type:"number"}]
+  const fldDefs={
+    study:[{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Service / Description",type:"text"},{k:"amount",label:"Amount Received (\u20A6)",type:"number",req:true}],
+    tours:[{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Package Description",type:"text"},{k:"amount",label:"Package Price Charged (\u20A6)",type:"number",req:true},{k:"cost",label:"Total Amount Spent on Package (\u20A6)",type:"number"}],
+    flights:[{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Route / Destination",type:"text"},{k:"amount",label:"Amount Charged (\u20A6)",type:"number",req:true},{k:"cost",label:"Ticket Cost (\u20A6)",type:"number"}]
   };
   const titles={study:"Study Abroad Income",tours:"Travel & Tours Package",flights:"Flight Booking"};
   let existing=null;
-  if(id){
-    const res=await fetchTable("revenue");
-    existing=res.find(r=>r.id===id)||null;
-  }
+  if(id){ const {data}=await sb.from("revenue").select("*").eq("id",id).single(); existing=data; }
+  const flds=fldDefs[streamKey]||fldDefs.study;
   let html="";
-  const flds=fields[streamKey]||fields.study;
   flds.forEach(f=>{
     let val=existing?(existing[f.k]==null?"":existing[f.k]):(f.type==="date"?todayISO():"");
-    html+=fieldInput(f,val);
+    html+="<div class='field'><label>"+esc(f.label)+(f.req?" *":"")+"</label>";
+    if(f.type==="select"){
+      html+="<select id='f_"+f.k+"'>";
+      f.opts.forEach(o=>{ const ov=typeof o==="object"?o.value:o, ol=typeof o==="object"?o.label:o; html+="<option value='"+esc(ov)+"'"+(String(val)===String(ov)?" selected":"")+">"+esc(ol)+"</option>"; });
+      html+="</select>";
+    } else if(f.type==="textarea"){ html+="<textarea id='f_"+f.k+"' rows='3'>"+esc(val)+"</textarea>"; }
+    else { html+="<input id='f_"+f.k+"' type='"+f.type+"' value='"+esc(val)+"'>"; }
+    html+="</div>";
   });
   document.getElementById("modalTitle").textContent=(id?"Edit ":"Add ")+titles[streamKey];
   document.getElementById("modalBody").innerHTML=html;
+  document.getElementById("modalSave").onclick=saveForm;
   document.getElementById("overlay").classList.add("show");
   modalCtx={key:"_finance_"+streamKey,table:"revenue",id:id||null,parentView:"finances",stream};
 }
@@ -946,11 +1021,24 @@ function fieldDefs(key){
 }
 function tableFor(key){ return CRUD[key]?CRUD[key].table:key; }
 function parentViewFor(key){
-  if(key==="revenue"||key==="expenses"||key.startsWith("_finance_")) return "finances";
+  if(key==="revenue"||key==="expenses"||key.startsWith("_finance_")||key==="revenueStudy"||key==="revenueTours"||key==="revenueFlights") return "finances";
   if(key==="personal_eduvoyage"||key==="personal_waka") return "personal";
   if(key==="weeklyDuties"||key==="competitors") return "ceTasks";
   if(key==="socialPerf") return "social";
+  if(key==="serviceStudy"||key==="serviceTours") return "services";
   return key;
+}
+function copyToClip(text){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>toast("Copied to clipboard")).catch(()=>fallbackCopy(text));
+  } else { fallbackCopy(text); }
+}
+function fallbackCopy(text){
+  const el=document.createElement("textarea"); el.value=text;
+  el.style.position="fixed"; el.style.opacity="0";
+  document.body.appendChild(el); el.select();
+  try{ document.execCommand("copy"); toast("Copied"); }catch(e){ toast("Long-press to copy manually"); }
+  document.body.removeChild(el);
 }
 function moduleLabel(key){ return CRUD[key]?CRUD[key].title:({revenue:"Revenue",expenses:"Expense",personal_eduvoyage:"Note",personal_waka:"WakaWithAmi"}[key]||key); }
 function labelOf(obj){ return obj.client_name||obj.title||obj.task||obj.duty||obj.competitor||obj.month||obj.client||obj.week||obj.country||obj.note||obj.content||obj.topic||obj.service_name||"record"; }
@@ -999,6 +1087,11 @@ async function saveForm(){
   }
   // Auto-inject stream for finance stream forms
   if(modalCtx.stream) obj.stream=modalCtx.stream;
+  if(key==="revenueStudy") obj.stream="Study Abroad";
+  else if(key==="revenueTours") obj.stream="Travel & Tours";
+  else if(key==="revenueFlights") obj.stream="Flights";
+  if(key==="serviceStudy") obj.type="Study Abroad";
+  else if(key==="serviceTours") obj.type="Travel & Tours";
   if(!id && HAS_CREATED_BY.has(table)) obj.created_by=session.role;
   if(id && HAS_UPDATED_AT.has(table)) obj.updated_at=new Date().toISOString();
   const saveBtn=document.getElementById("modalSave"); saveBtn.disabled=true;
