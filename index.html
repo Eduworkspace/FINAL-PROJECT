@@ -725,51 +725,127 @@ function copyText(text){
 function fallbackCopy(text){ const ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy");toast("Copied to clipboard");}catch(e){alert(text);} document.body.removeChild(ta); }
 
 /* ---------- Finances (admin) ---------- */
+function streamRows(data, stream, editKey){
+  const rows=data.filter(r=>String(r.stream||"")=== stream);
+  if(!rows.length) return "<tr><td colspan='6' class='empty'>No entries yet.</td></tr>";
+  return rows.map(r=>{
+    const profit=Number(r.amount||0)-Number(r.cost||0);
+    return "<tr><td style='white-space:nowrap'>"+esc(r.date||"")+"</td><td>"+esc(r.client||"")+"</td><td>"+esc(r.service||"")+"</td>"+
+      "<td style='color:var(--gold-soft)'>"+naira(r.amount)+"</td>"+
+      (stream!=="Study Abroad"?"<td>"+naira(r.cost)+"</td><td style='font-weight:600;color:"+(profit>=0?"var(--ok)":"var(--danger)")+"'>"+naira(profit)+"</td>":"<td colspan='2'></td>")+
+      "<td><div class='row-actions'><button class='icon-btn' onclick=\"openFinanceForm('"+editKey+"','"+r.id+"')\">Edit</button>"+
+      "<button class='icon-btn del' onclick=\"removeItem('revenue','"+r.id+"','finances')\">Delete</button></div></td></tr>";
+  }).join("");
+}
 async function viewFinances(){
   const now=new Date();
   const monthStr=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
   const monthLabel=now.toLocaleString("en-GB",{month:"long",year:"numeric"});
   const [revenue,expenses,clients]=await Promise.all([fetchTable("revenue"),fetchTable("expenses"),fetchTable("clients")]);
-  const mRev=revenue.filter(r=>String(r.date||"").startsWith(monthStr));
-  const mExp=expenses.filter(e=>String(e.date||"").startsWith(monthStr));
-  const mRevTotal=mRev.reduce((s,r)=>s+(Number(r.amount)||0),0);
-  const mExpTotal=mExp.reduce((s,e)=>s+(Number(e.amount)||0),0);
-  const mNet=mRevTotal-mExpTotal;
-  const totalRev=revenue.reduce((s,r)=>s+(Number(r.amount)||0),0);
-  const totalExp=expenses.reduce((s,e)=>s+(Number(e.amount)||0),0);
-  const net=totalRev-totalExp;
   const outstanding=clients.reduce((s,c)=>s+(Number(c.balance)||0),0);
-  const revRows=revenue.length?revenue.map(r=>("<tr><td>"+esc(r.date)+"</td><td>"+esc(r.client)+"</td><td>"+esc(r.service)+"</td><td>"+naira(r.amount)+"</td><td><div class='row-actions'><button class='icon-btn' onclick=\"openForm('revenue','"+r.id+"')\">Edit</button><button class='icon-btn del' onclick=\"removeItem('revenue','"+r.id+"','finances')\">Delete</button></div></td></tr>")).join(""):"<tr><td colspan='5' class='empty'>No revenue recorded.</td></tr>";
-  const expRows=expenses.length?expenses.map(e=>("<tr><td>"+esc(e.date)+"</td><td>"+esc(e.category)+"</td><td>"+esc(e.description)+"</td><td>"+naira(e.amount)+"</td><td><div class='row-actions'><button class='icon-btn' onclick=\"openForm('expenses','"+e.id+"')\">Edit</button><button class='icon-btn del' onclick=\"removeItem('expenses','"+e.id+"','finances')\">Delete</button></div></td></tr>")).join(""):"<tr><td colspan='5' class='empty'>No expenses recorded.</td></tr>";
+
+  // Per-stream helpers
+  function streamStats(stream, month){
+    const rows=revenue.filter(r=>String(r.stream||"")===stream&&(month?String(r.date||"").startsWith(month):true));
+    const rev=rows.reduce((s,r)=>s+(Number(r.amount)||0),0);
+    const cost=rows.reduce((s,r)=>s+(Number(r.cost)||0),0);
+    return {rev,cost,profit:rev-cost};
+  }
+  const SA=streamStats("Study Abroad",monthStr);
+  const TT=streamStats("Travel & Tours",monthStr);
+  const FL=streamStats("Flights",monthStr);
+  const mExp=expenses.filter(e=>String(e.date||"").startsWith(monthStr)).reduce((s,e)=>s+(Number(e.amount)||0),0);
+
+  // Monthly breakdown per stream
+  const months={};
+  revenue.forEach(r=>{
+    const m=String(r.date||"").slice(0,7); const st=String(r.stream||"Other");
+    if(!m) return;
+    if(!months[m]) months[m]={};
+    if(!months[m][st]) months[m][st]={rev:0,cost:0};
+    months[m][st].rev+=Number(r.amount)||0; months[m][st].cost+=Number(r.cost)||0;
+  });
+  expenses.forEach(e=>{
+    const m=String(e.date||"").slice(0,7);
+    if(!m) return;
+    if(!months[m]) months[m]={};
+    if(!months[m]["_exp"]) months[m]["_exp"]={rev:0,cost:0};
+    months[m]["_exp"].rev+=Number(e.amount)||0;
+  });
+  const sortedMonths=Object.keys(months).sort().reverse();
+  const breakdownRows=sortedMonths.length?sortedMonths.map(m=>{
+    const d=months[m];
+    const sa=(d["Study Abroad"]||{rev:0,cost:0}); const tt=(d["Travel & Tours"]||{rev:0,cost:0}); const fl=(d["Flights"]||{rev:0,cost:0});
+    const exp=(d["_exp"]||{rev:0}).rev;
+    const label=new Date(m+"-01").toLocaleString("en-GB",{month:"long",year:"numeric"});
+    const totalProfit=(sa.rev-sa.cost)+(tt.rev-tt.cost)+(fl.rev-fl.cost)-exp;
+    return "<tr><td style='font-weight:600'>"+esc(label)+"</td>"+
+      "<td style='color:var(--gold-soft)'>"+naira(sa.rev)+"</td>"+
+      "<td>"+naira(tt.rev)+" / <span style='color:var(--danger)'>"+naira(tt.cost)+"</span> = <b>"+naira(tt.rev-tt.cost)+"</b></td>"+
+      "<td>"+naira(fl.rev)+" / <span style='color:var(--danger)'>"+naira(fl.cost)+"</span> = <b>"+naira(fl.rev-fl.cost)+"</b></td>"+
+      "<td style='color:var(--muted)'>"+naira(exp)+"</td>"+
+      "<td style='font-weight:700;color:"+(totalProfit>=0?"var(--ok)":"var(--danger)")+"'>"+naira(totalProfit)+"</td></tr>";
+  }).join(""):"<tr><td colspan='6' class='empty'>No data yet.</td></tr>";
+
+  const expRows=expenses.length?expenses.map(e=>"<tr><td>"+esc(e.date||"")+"</td><td>"+esc(e.category||"")+"</td><td>"+esc(e.description||"")+"</td><td>"+naira(e.amount)+"</td><td><div class='row-actions'><button class='icon-btn' onclick=\"openForm('expenses','"+e.id+"')\">Edit</button><button class='icon-btn del' onclick=\"removeItem('expenses','"+e.id+"','finances')\">Delete</button></div></td></tr>").join(""):"<tr><td colspan='5' class='empty'>No expenses recorded.</td></tr>";
+
   return `
-    <div class="section-label">${monthLabel}</div>
-    <div class="stats">
-      <div class="stat"><div class="label">Revenue This Month</div><div class="value gold">${naira(mRevTotal)}</div></div>
-      <div class="stat"><div class="label">Expenses This Month</div><div class="value">${naira(mExpTotal)}</div></div>
-      <div class="stat"><div class="label">Net This Month</div><div class="value ${mNet>=0?'gold':''}">${naira(mNet)}</div></div>
+    <div class="section-label">${monthLabel} — This Month</div>
+    <div class="stats" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stat"><div class="label">Study Abroad</div><div class="value gold">${naira(SA.rev)}</div><div style="font-size:11px;color:var(--muted);margin-top:4px">Processing fees</div></div>
+      <div class="stat"><div class="label">Travel & Tours</div><div class="value gold">${naira(TT.rev)}</div><div style="font-size:11px;color:var(--muted);margin-top:4px">Cost ${naira(TT.cost)} &bull; Profit <b style="color:var(--ok)">${naira(TT.profit)}</b></div></div>
+      <div class="stat"><div class="label">Flights</div><div class="value gold">${naira(FL.rev)}</div><div style="font-size:11px;color:var(--muted);margin-top:4px">Cost ${naira(FL.cost)} &bull; Profit <b style="color:var(--ok)">${naira(FL.profit)}</b></div></div>
       <div class="stat"><div class="label">Outstanding (Clients)</div><div class="value">${naira(outstanding)}</div></div>
     </div>
+
     <div class="section-label" style="margin-top:8px">Monthly Breakdown</div>
     <div class="panel" style="margin-bottom:20px">
-      <div class="table-wrap"><table><thead><tr><th>Month</th><th>Revenue</th><th>Expenses</th><th>Net</th></tr></thead><tbody>
-      ${(()=>{
-        const months={};
-        revenue.forEach(r=>{ const m=String(r.date||"").slice(0,7); if(m) { if(!months[m]) months[m]={rev:0,exp:0}; months[m].rev+=(Number(r.amount)||0); } });
-        expenses.forEach(e=>{ const m=String(e.date||"").slice(0,7); if(m) { if(!months[m]) months[m]={rev:0,exp:0}; months[m].exp+=(Number(e.amount)||0); } });
-        const sorted=Object.keys(months).sort().reverse();
-        if(!sorted.length) return "<tr><td colspan='4' class='empty'>No data yet.</td></tr>";
-        return sorted.map(m=>{
-          const d=months[m]; const net=d.rev-d.exp;
-          const label=new Date(m+"-01").toLocaleString("en-GB",{month:"long",year:"numeric"});
-          return "<tr><td style='font-weight:600'>"+esc(label)+"</td><td style='color:var(--gold-soft)'>"+naira(d.rev)+"</td><td>"+naira(d.exp)+"</td><td style='font-weight:600;color:"+(net>=0?"var(--ok)":"var(--danger)")+"'>"+naira(net)+"</td></tr>";
-        }).join("");
-      })()}
-      </tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th>Month</th><th>Study Abroad</th><th>Travel &amp; Tours</th><th>Flights</th><th>Expenses</th><th>Net Profit</th></tr></thead>
+      <tbody>${breakdownRows}</tbody></table></div>
     </div>
-    <div class="panel"><div class="panel-head"><div><h3>Revenue</h3></div><button class="btn" onclick="openForm('revenue',null)">Add Revenue</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Client</th><th>Service</th><th>Amount</th><th style="text-align:right">Actions</th></tr></thead><tbody>${revRows}</tbody></table></div></div>
-    <div class="panel"><div class="panel-head"><div><h3>Expenses</h3></div><button class="btn" onclick="openForm('expenses',null)">Add Expense</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th style="text-align:right">Actions</th></tr></thead><tbody>${expRows}</tbody></table></div></div>`;
+
+    <div class="panel"><div class="panel-head"><div><h3>Eduvoyage Ltd — Study Abroad</h3><div class="panel-sub">Processing fees &amp; school applications</div></div><button class="btn" onclick="openFinanceForm('study',null)">Add Income</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Client</th><th>Service</th><th>Amount Received</th><th colspan="2"></th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody>${streamRows(revenue,"Study Abroad","study")}</tbody></table></div></div>
+
+    <div class="panel"><div class="panel-head"><div><h3>Eduvoyage Travel &amp; Tours</h3><div class="panel-sub">Holiday packages &amp; tours</div></div><button class="btn" onclick="openFinanceForm('tours',null)">Add Package</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Client</th><th>Package</th><th>Charged</th><th>Spent</th><th>Profit</th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody>${streamRows(revenue,"Travel & Tours","tours")}</tbody></table></div></div>
+
+    <div class="panel"><div class="panel-head"><div><h3>Flight Bookings</h3><div class="panel-sub">Ticket revenue &amp; profit</div></div><button class="btn" onclick="openFinanceForm('flights',null)">Add Flight</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Client</th><th>Route</th><th>Charged</th><th>Ticket Cost</th><th>Profit</th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody>${streamRows(revenue,"Flights","flights")}</tbody></table></div></div>
+
+    <div class="panel"><div class="panel-head"><div><h3>Business Expenses</h3><div class="panel-sub">Running costs &amp; overheads</div></div><button class="btn" onclick="openForm('expenses',null)">Add Expense</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody>${expRows}</tbody></table></div></div>`;
+}
+
+/* Finance form opener — sets stream automatically */
+async function openFinanceForm(streamKey, id){
+  const streamMap={study:"Study Abroad",tours:"Travel & Tours",flights:"Flights"};
+  const stream=streamMap[streamKey]||"Study Abroad";
+  const fields={
+    study:[{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Service / Description",type:"text"},{k:"amount",label:"Amount Received (₦)",type:"number",req:true}],
+    tours:[{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Package Description",type:"text"},{k:"amount",label:"Package Price Charged (₦)",type:"number",req:true},{k:"cost",label:"Total Amount Spent on Package (₦)",type:"number"}],
+    flights:[{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Route / Destination",type:"text"},{k:"amount",label:"Amount Charged (₦)",type:"number",req:true},{k:"cost",label:"Ticket Cost (₦)",type:"number"}]
+  };
+  const titles={study:"Study Abroad Income",tours:"Travel & Tours Package",flights:"Flight Booking"};
+  let existing=null;
+  if(id){
+    const res=await fetchTable("revenue");
+    existing=res.find(r=>r.id===id)||null;
+  }
+  let html="";
+  const flds=fields[streamKey]||fields.study;
+  flds.forEach(f=>{
+    let val=existing?(existing[f.k]==null?"":existing[f.k]):(f.type==="date"?todayISO():"");
+    html+=fieldInput(f,val);
+  });
+  document.getElementById("modalTitle").textContent=(id?"Edit ":"Add ")+titles[streamKey];
+  document.getElementById("modalBody").innerHTML=html;
+  document.getElementById("overlay").classList.add("show");
+  modalCtx={key:"_finance_"+streamKey,table:"revenue",id:id||null,parentView:"finances",stream};
 }
 
 /* ---------- Personal Workspace (admin) ---------- */
@@ -859,6 +935,9 @@ async function changePassword(){
 let modalCtx=null;
 function fieldDefs(key){
   if(CRUD[key]) return CRUD[key].fields;
+  if(key==="_finance_study") return [{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Service / Description",type:"text"},{k:"amount",label:"Amount Received (\u20A6)",type:"number",req:true}];
+  if(key==="_finance_tours") return [{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Package Description",type:"text"},{k:"amount",label:"Package Price Charged (\u20A6)",type:"number",req:true},{k:"cost",label:"Total Amount Spent on Package (\u20A6)",type:"number"}];
+  if(key==="_finance_flights") return [{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Route / Destination",type:"text"},{k:"amount",label:"Amount Charged (\u20A6)",type:"number",req:true},{k:"cost",label:"Ticket Cost (\u20A6)",type:"number"}];
   if(key==="revenue") return [{k:"date",label:"Date",type:"date"},{k:"client",label:"Client",type:"text",req:true},{k:"service",label:"Service",type:"text"},{k:"amount",label:"Amount (\u20A6)",type:"number"}];
   if(key==="expenses") return [{k:"date",label:"Date",type:"date"},{k:"category",label:"Category",type:"text",req:true},{k:"description",label:"Description",type:"text"},{k:"amount",label:"Amount (\u20A6)",type:"number"}];
   if(key==="personal_eduvoyage") return [{k:"note_date",label:"Date",type:"date"},{k:"note",label:"Note",type:"textarea",req:true}];
@@ -867,7 +946,7 @@ function fieldDefs(key){
 }
 function tableFor(key){ return CRUD[key]?CRUD[key].table:key; }
 function parentViewFor(key){
-  if(key==="revenue"||key==="expenses") return "finances";
+  if(key==="revenue"||key==="expenses"||key.startsWith("_finance_")) return "finances";
   if(key==="personal_eduvoyage"||key==="personal_waka") return "personal";
   if(key==="weeklyDuties"||key==="competitors") return "ceTasks";
   if(key==="socialPerf") return "social";
@@ -918,6 +997,8 @@ async function saveForm(){
     if((f.type==="date"||f.type==="time")&&v==="") v=null;
     obj[f.k]=v;
   }
+  // Auto-inject stream for finance stream forms
+  if(modalCtx.stream) obj.stream=modalCtx.stream;
   if(!id && HAS_CREATED_BY.has(table)) obj.created_by=session.role;
   if(id && HAS_UPDATED_AT.has(table)) obj.updated_at=new Date().toISOString();
   const saveBtn=document.getElementById("modalSave"); saveBtn.disabled=true;
