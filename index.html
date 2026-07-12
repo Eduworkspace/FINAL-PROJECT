@@ -774,13 +774,12 @@ async function viewServices(){
     if(!rows.length) return "<tr><td colspan='5' class='empty'>No entries yet. Use the Add button to get started.</td></tr>";
     return rows.map(r=>{
       const req=String(r.requirements||"");
-      const preview=req.length>120?req.slice(0,120)+"\u2026":req;
       return "<tr>"+
-        "<td style='font-weight:600;white-space:nowrap'>"+esc(r.country||"")+"</td>"+
-        "<td>"+esc(r.service_name||"")+"</td>"+
-        "<td style='font-size:12px;color:var(--muted);max-width:260px'>"+esc(preview)+"</td>"+
-        "<td>"+esc(r.notes||"")+"</td>"+
-        "<td><div class='row-actions'>"+
+        "<td style='font-weight:600;white-space:nowrap;vertical-align:top'>"+esc(r.country||"")+"</td>"+
+        "<td style='vertical-align:top;white-space:nowrap'>"+esc(r.service_name||"")+"</td>"+
+        "<td style='font-size:13px;white-space:pre-wrap;line-height:1.7'>"+esc(req)+"</td>"+
+        "<td style='vertical-align:top;font-size:12px;color:var(--muted)'>"+esc(r.notes||"")+"</td>"+
+        "<td style='vertical-align:top'><div class='row-actions'>"+
           "<button class='icon-btn' style='background:var(--gold);color:#fff;border-color:var(--gold)' onclick=\"copyToClip("+JSON.stringify(req)+")\">Copy</button>"+
           "<button class='icon-btn' onclick=\"openForm('"+editKey+"','"+r.id+"')\">Edit</button>"+
           "<button class='icon-btn del' onclick=\"removeItem('service_info','"+r.id+"','services')\">Delete</button>"+
@@ -789,10 +788,10 @@ async function viewServices(){
   }
   return `
     <div class="panel"><div class="panel-head"><div><h3>Study Abroad — Countries &amp; Requirements</h3><div class="panel-sub">Tap <b>Copy</b> to copy requirements straight to clipboard for WhatsApp or email.</div></div><button class="btn" onclick="openForm('serviceStudy',null)">Add Country / Service</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Country</th><th>Service / Visa</th><th>Requirements (preview)</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+      <div class="table-wrap"><table><thead><tr><th>Country</th><th>Service / Visa</th><th>Requirements</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
       <tbody>${serviceTable(studyRows,"serviceStudy")}</tbody></table></div></div>
     <div class="panel"><div class="panel-head"><div><h3>Travel &amp; Tours — Destinations &amp; Packages</h3><div class="panel-sub">Tap <b>Copy</b> to copy package details or requirements instantly.</div></div><button class="btn" onclick="openForm('serviceTours',null)">Add Destination</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Destination</th><th>Package</th><th>Details (preview)</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+      <div class="table-wrap"><table><thead><tr><th>Destination</th><th>Package</th><th>Details</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
       <tbody>${serviceTable(toursRows,"serviceTours")}</tbody></table></div></div>`;
 }
 function streamRows(data, stream, editKey){
