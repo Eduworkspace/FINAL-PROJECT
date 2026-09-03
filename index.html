@@ -94,13 +94,16 @@
   .sidebar{
     width:264px;flex:none;color:#E7E9F0;
     background:linear-gradient(185deg,var(--navy) 0%, var(--navy-2) 100%);
-    display:flex;flex-direction:column;padding:24px 16px;position:sticky;top:0;height:100vh;
+    display:flex;flex-direction:column;padding:20px 16px;position:sticky;top:0;height:100vh;
+    overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.25) transparent;
   }
-  .side-brand{display:flex;align-items:center;gap:12px;padding:6px 10px 24px}
+  .sidebar::-webkit-scrollbar{width:7px}
+  .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:4px}
+  .side-brand{display:flex;align-items:center;gap:12px;padding:6px 10px 16px}
   .side-brand .logo-tile{width:42px;height:42px;font-size:15px}
   .side-brand h1{font-size:17px;margin:0;color:#fff;font-weight:700;letter-spacing:-.02em}
   .side-brand p{margin:1px 0 0;font-size:11.5px;color:#9BA6C2;font-weight:400}
-  .nav-group{margin-top:18px}
+  .nav-group{margin-top:12px}
   .nav-group .label{
     font-size:10.5px;letter-spacing:1.2px;color:#8290B0;font-weight:600;
     padding:0 12px 9px;text-transform:uppercase;
