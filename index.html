@@ -400,11 +400,40 @@ async function save(){
     catch(e){ console.warn("sync save failed", e); }
   }
 }
+/* union two arrays by a key, keeping remote's version on conflict, then any local-only extras */
+function unionBy(remoteArr, localArr, keyFn){
+  const out = Array.isArray(remoteArr) ? remoteArr.slice() : [];
+  const seen = new Set(out.map(keyFn));
+  (Array.isArray(localArr)?localArr:[]).forEach(item=>{ const k=keyFn(item); if(!seen.has(k)){ out.push(item); seen.add(k);} });
+  return out;
+}
+/* merge a remote copy with a local copy so nothing on this device is silently lost */
+function mergeState(local, remote){
+  local  = Object.assign(seed(), local||{});
+  remote = Object.assign(seed(), remote||{});
+  const m = Object.assign({}, remote);
+  m.clients    = unionBy(remote.clients,    local.clients,    x=>x.id);
+  m.attendance = unionBy(remote.attendance, local.attendance, x=>x.name+"|"+x.date);
+  m.webinars   = unionBy(remote.webinars,   local.webinars,   x=>x.id);
+  m.content    = unionBy(remote.content,    local.content,    x=>x.id);
+  m.finances   = unionBy(remote.finances,   local.finances,   x=>x.id);
+  m.todos      = unionBy(remote.todos,      local.todos,      x=>x.id);
+  m.activity   = unionBy(remote.activity,   local.activity,   x=>x.ts+"|"+x.msg).slice(0,400);
+  m.roster     = unionBy((remote.roster||[]).map(n=>({v:n})), (local.roster||[]).map(n=>({v:n})), x=>x.v).map(x=>x.v);
+  m.notes      = (remote.notes && remote.notes.length) ? remote.notes : (local.notes||"");
+  return m;
+}
 async function pull(){
   if(!sb) return;
   try{
     const {data,error} = await sb.from("workspace_state").select("data").eq("id",STATE_ID).maybeSingle();
-    if(!error && data && data.data){ state = Object.assign(seed(), data.data); }
+    if(!error && data && data.data){
+      const remote = data.data;
+      /* adopt the shared copy, but never drop a sign-in this device just made */
+      const keepAttendance = unionBy(remote.attendance, state.attendance, x=>x.name+"|"+x.date);
+      state = Object.assign(seed(), remote);
+      state.attendance = keepAttendance;
+    }
   }catch(e){ console.warn("sync pull failed", e); }
 }
 async function initSync(){
@@ -412,9 +441,15 @@ async function initSync(){
     try{
       sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       syncing = true;
+      loadLocal();                         // whatever this device last had
+      const localCopy = state;
       const {data} = await sb.from("workspace_state").select("data").eq("id",STATE_ID).maybeSingle();
-      if(data && data.data){ state = Object.assign(seed(), data.data); }
-      else { await sb.from("workspace_state").upsert({id:STATE_ID, data:state, updated_at:new Date().toISOString()}); }
+      if(data && data.data){
+        state = mergeState(localCopy, data.data);          // combine, losing nothing
+        await sb.from("workspace_state").upsert({id:STATE_ID, data:state, updated_at:new Date().toISOString()}); // heal the shared copy
+      } else {
+        await sb.from("workspace_state").upsert({id:STATE_ID, data:state, updated_at:new Date().toISOString()});
+      }
       setInterval(async ()=>{ if(document.getElementById("app").style.display!=="none"){ await pull(); renderCurrent(); } }, 15000);
       return;
     }catch(e){ console.warn("Supabase init failed, using local storage", e); sb=null; syncing=false; }
@@ -520,8 +555,43 @@ function renderDashboard(){
       <div class="section-title"><span class="tick"></span>Recent updates</div>
       ${recent.length ? recent.map(a=>`<div style="display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line)"><span style="font-size:14px">${esc(a.msg)}</span><span class="muted" style="font-size:12.5px;white-space:nowrap">${fmtDateTime(a.ts)}</span></div>`).join("")
         : `<p class="muted" style="margin:10px 0 0">No activity recorded yet.</p>`}
+    </div>
+    <div class="card pad" style="margin-top:20px">
+      <div class="section-title"><span class="tick"></span>Backup</div>
+      <p class="muted" style="margin:8px 0 14px;font-size:13.5px">Download a copy of everything — clients, finances, sign-ins, content — as a file you keep on your device. Do this weekly. If anything ever goes wrong, Restore brings it all back.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" onclick="exportBackup()">⬇ Export backup</button>
+        <button class="btn ghost" onclick="document.getElementById('restoreFile').click()">⬆ Restore from file</button>
+        <input type="file" id="restoreFile" accept="application/json,.json" style="display:none" onchange="importBackup(this)">
+      </div>
     </div>`;
 }
+window.exportBackup = function(){
+  try{
+    const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "eduvoyage-backup-"+todayStr()+".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+    log("Backup exported"); save();
+  }catch(e){ alert("Could not export backup: "+e.message); }
+};
+window.importBackup = function(input){
+  const file = input.files && input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    let data; try{ data = JSON.parse(reader.result); }catch(e){ alert("That file isn't a valid backup."); input.value=""; return; }
+    if(!data || !Array.isArray(data.clients)){ alert("That file doesn't look like an EduVoyage backup."); input.value=""; return; }
+    confirmModal("Restore this backup? It will merge the backup into your current workspace — nothing already here will be deleted.", async ()=>{
+      state = mergeState(state, data);   // union, loses nothing from either side
+      log("Backup restored from file");
+      await save(); closeModal(); renderCurrent();
+    });
+    input.value="";
+  };
+  reader.readAsText(file);
+};
 
 /* ---------- Attendance / daily sign-in ---------- */
 function renderAttendance(){
