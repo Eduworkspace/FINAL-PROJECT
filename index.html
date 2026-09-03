@@ -1,1185 +1,895 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EduVoyage Operations Workspace</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EduVoyage — Operations Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<!-- Supabase is OPTIONAL. If it fails to load, the app runs on this device's storage. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
-    --navy:#16365F;--navy-dark:#0F2544;--navy-card:#EBF0F7;--navy-line:#CBD5E1;
-    --gold:#C8A24B;--gold-soft:#8B5E0A;--white:#FFFFFF;--bg:#EEF2F7;
-    --text:#1E3A5F;--muted:#64748B;--danger:#B91C3A;--ok:#166534;
+    --ink:#0F1B3D;
+    --muted:#5A6B90;
+    --faint:#8A98B8;
+    --brand-top:#1B47B0;
+    --brand-bot:#2E6BEB;
+    --accent:#FF7A1A;
+    --accent-press:#EA6A0C;
+    --accent-soft:#FFEBD8;
+    --bg:#F3F6FD;
+    --surface:#FFFFFF;
+    --line:#E4EAF6;
+    --line-strong:#D3DCEF;
+    --green:#137A46; --green-bg:#DFF6E9;
+    --amber:#9A5B00; --amber-bg:#FCEFD3;
+    --blue:#1B47B0;  --blue-bg:#DCE6FF;
+    --red:#C2321F;   --red-bg:#FCE3DE;
+    --purple:#6B34C9;--purple-bg:#EBE1FD;
+    --grey:#5A6B90;  --grey-bg:#EAEEF7;
+    --radius:14px;
+    --shadow-sm:0 1px 2px rgba(19,40,90,.06);
+    --shadow-md:0 6px 22px rgba(19,40,90,.10);
+    --shadow-lg:0 18px 50px rgba(19,40,90,.22);
   }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;}
-  h1,h2,h3{font-weight:600;color:var(--navy)}
-  a{color:var(--navy);text-decoration:none}
-  button{font-family:inherit;cursor:pointer;border:none}
-  input,select,textarea{font-family:inherit}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+    background:var(--bg); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  button{font-family:inherit;cursor:pointer}
+  input,textarea,select{font-family:inherit}
 
-  #login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg)}
-  .login-card{width:100%;max-width:400px;background:var(--white);border:1px solid var(--navy-line);border-radius:16px;padding:40px 36px;box-shadow:0 4px 24px rgba(22,54,95,.10)}
-  .brand{display:flex;flex-direction:column;align-items:center;margin-bottom:28px}
-  .brand .mark{width:56px;height:56px;border-radius:14px;background:var(--navy);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;margin-bottom:14px;letter-spacing:.5px}
-  .brand h1{font-size:19px;letter-spacing:.3px;color:var(--navy)}
-  .brand .tag{color:var(--muted);font-size:12px;margin-top:5px;text-align:center}
-  .field{margin-bottom:14px}
-  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500}
-  .field input,.field select,.field textarea{width:100%;background:var(--white);border:1.5px solid var(--navy-line);color:var(--text);padding:11px 12px;border-radius:8px;font-size:14px}
-  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--navy)}
-  .btn{background:var(--navy);color:var(--white);font-weight:600;padding:11px 16px;border-radius:8px;font-size:14px;transition:background .15s}
-  .btn:hover{background:var(--navy-dark)}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
-  .btn-block{width:100%;margin-top:6px}
-  .btn-ghost{background:var(--white);color:var(--navy);border:1.5px solid var(--navy-line)}
-  .btn-ghost:hover{border-color:var(--navy);background:var(--bg)}
-  .btn-danger{background:var(--danger);color:#fff}
-  .btn-danger:hover{filter:brightness(1.1)}
-  .btn-sm{padding:6px 11px;font-size:12px;border-radius:6px}
-  .login-err{color:var(--danger);font-size:12.5px;margin-top:10px;min-height:16px;text-align:center}
-  .hint{color:var(--muted);font-size:11.5px;text-align:center;margin-top:18px;line-height:1.7}
-  .setup-box{font-size:12.5px;color:var(--text);line-height:1.7;background:var(--bg);border:1px solid var(--navy-line);border-radius:8px;padding:16px;margin-top:6px}
-  .setup-box code{background:var(--navy);color:var(--gold);padding:1px 5px;border-radius:4px;font-size:11.5px}
+  /* ---------- LOGIN ---------- */
+  #login{
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(1200px 700px at 20% -10%, #2E6BEB 0%, #1B47B0 45%, #12307E 100%);
+    padding:24px;
+  }
+  .login-card{
+    width:100%; max-width:390px; background:var(--surface); border-radius:20px;
+    padding:34px 30px; box-shadow:var(--shadow-lg);
+  }
+  .brandmark{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+  .logo-tile{
+    width:46px;height:46px;border-radius:12px;flex:none;
+    background:linear-gradient(150deg,var(--accent),#FF9E4D);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:800;font-size:17px;letter-spacing:.5px;
+    box-shadow:0 6px 16px rgba(255,122,26,.35);
+  }
+  .brandmark h1{font-size:19px;margin:0;font-weight:800}
+  .brandmark p{margin:0;font-size:12.5px;color:var(--muted);font-weight:600}
+  .login-card label{display:block;font-size:13px;font-weight:700;margin:0 0 7px}
+  .login-card input{
+    width:100%;padding:13px 14px;border:1.5px solid var(--line-strong);
+    border-radius:11px;font-size:15px;background:#FBFCFF;
+  }
+  .login-card input:focus{outline:none;border-color:var(--brand-bot);box-shadow:0 0 0 3px var(--blue-bg)}
+  .login-hint{font-size:12.5px;color:var(--muted);margin:14px 0 0;line-height:1.55}
+  .err{color:var(--red);font-size:13px;font-weight:600;margin:12px 0 0;min-height:18px}
 
+  .btn{
+    border:none;border-radius:11px;font-weight:700;font-size:14.5px;
+    padding:12px 18px;background:var(--accent);color:#fff;transition:background .15s, transform .05s;
+    box-shadow:0 4px 12px rgba(255,122,26,.28);
+  }
+  .btn:hover{background:var(--accent-press)}
+  .btn:active{transform:translateY(1px)}
+  .btn.full{width:100%;margin-top:20px}
+  .btn.ghost{background:transparent;color:var(--brand-top);box-shadow:none;border:1.5px solid var(--line-strong)}
+  .btn.ghost:hover{background:var(--bg)}
+  .btn.sm{padding:8px 13px;font-size:13px}
+  .btn.danger{background:var(--red)}
+  .btn.danger:hover{background:#a52717}
+
+  /* ---------- SHELL ---------- */
   #app{display:none;min-height:100vh}
   .shell{display:flex;min-height:100vh}
-  .sidebar{width:248px;flex-shrink:0;background:var(--navy);border-right:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:40}
-  .sidebar-head{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:11px}
-  .sidebar-head .mark{width:38px;height:38px;border-radius:9px;background:var(--gold);color:var(--white);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0}
-  .sidebar-head .name{font-size:14px;font-weight:600;color:#FFFFFF;line-height:1.2}
-  .sidebar-head .sub{font-size:10.5px;color:rgba(255,255,255,.5);margin-top:2px}
-  .nav{flex:1;overflow-y:auto;padding:12px 10px}
-  .nav-item{display:block;width:100%;text-align:left;background:transparent;color:rgba(255,255,255,.6);padding:10px 13px;border-radius:8px;font-size:13.5px;margin-bottom:2px;transition:all .12s}
-  .nav-item:hover{background:rgba(255,255,255,.1);color:#FFFFFF}
-  .nav-item.active{background:var(--gold);color:var(--navy);font-weight:600}
-  .nav-sep{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.35);padding:14px 13px 6px}
-  .sidebar-foot{padding:14px 16px;border-top:1px solid rgba(255,255,255,.08)}
-  .sidebar-foot .u-name{font-size:13px;color:#FFFFFF;font-weight:600}
-  .sidebar-foot .u-role{font-size:11px;color:var(--gold);text-transform:capitalize;margin-bottom:10px}
+  .sidebar{
+    width:258px;flex:none;color:#EAF0FF;
+    background:linear-gradient(200deg,var(--brand-top) 0%, #1E51CB 55%, #2E6BEB 100%);
+    display:flex;flex-direction:column;padding:20px 14px;position:sticky;top:0;height:100vh;
+  }
+  .side-brand{display:flex;align-items:center;gap:11px;padding:6px 8px 20px}
+  .side-brand .logo-tile{width:40px;height:40px;font-size:15px}
+  .side-brand h1{font-size:16px;margin:0;color:#fff;font-weight:800}
+  .side-brand p{margin:0;font-size:11.5px;color:#B9CCFF;font-weight:600}
+  .nav-group{margin-top:14px}
+  .nav-group .label{
+    font-size:11px;letter-spacing:.7px;color:#9FB6F5;font-weight:700;
+    padding:0 10px 8px;text-transform:uppercase;
+  }
+  .nav-item{
+    display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+    background:transparent;border:none;color:#D6E1FF;font-weight:600;font-size:14.5px;
+    padding:10px 11px;border-radius:10px;transition:background .12s,color .12s;
+  }
+  .nav-item:hover{background:rgba(255,255,255,.10);color:#fff}
+  .nav-item.active{background:var(--accent);color:#fff;box-shadow:0 5px 14px rgba(255,122,26,.4)}
+  .nav-item .ic{width:18px;text-align:center;font-size:15px;flex:none}
+  .nav-item .lock{margin-left:auto;font-size:12px;opacity:.75}
+  .side-foot{margin-top:auto;padding-top:16px}
+  .side-user{padding:6px 10px 12px}
+  .side-user b{display:block;color:#fff;font-size:14px}
+  .side-user span{font-size:12px;color:#AFC3FA}
+  .logout{
+    width:100%;background:rgba(255,255,255,.14);color:#fff;border:none;border-radius:10px;
+    padding:11px;font-weight:700;font-size:13.5px;transition:background .12s;
+  }
+  .logout:hover{background:rgba(255,255,255,.24)}
 
-  .main{flex:1;margin-left:248px;min-width:0;display:flex;flex-direction:column}
-  .topbar{height:62px;border-bottom:1px solid var(--navy-line);background:var(--white);display:flex;align-items:center;justify-content:space-between;padding:0 26px;position:sticky;top:0;z-index:30}
-  .topbar h2{font-size:17px;color:var(--navy)}
-  .topbar .right{display:flex;align-items:center;gap:12px}
-  .sync{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted)}
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
-  .dot.off{background:var(--danger)}
-  .hamburger{display:none;background:transparent;color:var(--text);font-size:20px;padding:6px 10px;border-radius:6px}
-  .content{padding:26px;flex:1}
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .topbar{
+    background:var(--surface);border-bottom:1px solid var(--line);
+    padding:20px 30px;position:sticky;top:0;z-index:5;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+  }
+  .topbar h2{margin:0;font-size:22px;font-weight:800;letter-spacing:-.3px}
+  .topbar .sub{font-size:13px;color:var(--muted);font-weight:600;margin-top:2px}
+  .content{padding:26px 30px 60px;max-width:1180px;width:100%}
 
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
-  .stat{background:var(--white);border:1px solid var(--navy-line);border-radius:12px;padding:18px;box-shadow:0 1px 4px rgba(22,54,95,.06)}
-  .stat .label{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
-  .stat .value{font-size:25px;font-weight:700;color:var(--navy);margin-top:8px}
-  .stat .value.gold{color:var(--gold-soft)}
+  /* ---------- COMPONENTS ---------- */
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+  .card.pad{padding:22px}
+  .section-title{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:800;margin:0 0 4px}
+  .section-title .tick{width:4px;height:17px;border-radius:3px;background:var(--accent);display:inline-block}
+  .row-between{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
 
-  .panel{background:var(--white);border:1px solid var(--navy-line);border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 1px 4px rgba(22,54,95,.06)}
-  .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
-  .panel-head h3{font-size:15px;color:var(--navy)}
-  .panel-sub{font-size:12px;color:var(--muted);margin-top:3px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow-sm)}
+  .kpi .n{font-size:32px;font-weight:800;letter-spacing:-1px;line-height:1}
+  .kpi .l{font-size:13px;color:var(--muted);font-weight:600;margin-top:8px}
+  .kpi.accent{background:linear-gradient(160deg,#fff, #FFF6EE);border-color:#FBE0C6}
+  .kpi.accent .n{color:var(--accent-press)}
 
-  .table-wrap{overflow-x:auto}
-  table{width:100%;border-collapse:collapse;font-size:13px}
-  th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:10px 12px;border-bottom:1.5px solid var(--navy-line);white-space:nowrap;background:var(--bg)}
-  td{padding:11px 12px;border-bottom:1px solid var(--navy-line);color:var(--text);vertical-align:middle}
-  tr:last-child td{border-bottom:none}
-  tbody tr:hover{background:var(--navy-card)}
-  .empty{text-align:center;color:var(--muted);padding:34px 10px;font-size:13px}
-  .pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:#F1F5F9;color:var(--muted)}
-  .pill.ok{background:#DCFCE7;color:#166534}
-  .pill.warn{background:#FEF3C7;color:#92400E}
-  .pill.muted{background:#F1F5F9;color:var(--muted)}
-  .pill.danger{background:#FEE2E2;color:#991B1B}
-  .section-label{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--navy);border-left:3px solid var(--gold);padding-left:8px;margin:4px 0 12px}
-  .row-actions{display:flex;gap:7px;white-space:nowrap;justify-content:flex-end}
-  .icon-btn{background:var(--bg);color:var(--navy);border:1px solid var(--navy-line);padding:5px 10px;border-radius:6px;font-size:12px}
-  .icon-btn:hover{border-color:var(--navy);background:var(--white)}
-  .icon-btn.del:hover{border-color:var(--danger);color:var(--danger)}
+  table{width:100%;border-collapse:collapse}
+  thead th{
+    text-align:left;font-size:11.5px;letter-spacing:.4px;color:var(--faint);
+    font-weight:700;text-transform:uppercase;padding:12px 14px;border-bottom:1px solid var(--line);
+  }
+  tbody td{padding:14px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#FAFBFF}
+  .client-name{font-weight:700}
+  .muted{color:var(--muted)}
+  .dash{color:var(--line-strong)}
 
-  .overlay{display:none;position:fixed;inset:0;background:rgba(10,20,40,.55);z-index:100;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
-  .overlay.show{display:flex}
-  .modal{width:100%;max-width:480px;background:var(--white);border:1px solid var(--navy-line);border-radius:14px;padding:24px;box-shadow:0 8px 32px rgba(22,54,95,.12)}
-  .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-  .modal-head h3{font-size:16px;color:var(--navy)}
-  .modal-close{background:transparent;color:var(--muted);font-size:20px;line-height:1;padding:2px 8px}
-  .modal-close:hover{color:var(--navy)}
-  .modal-foot{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
+  .pill{display:inline-block;padding:5px 11px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+  .pill.blue{background:var(--blue-bg);color:var(--blue)}
+  .pill.amber{background:var(--amber-bg);color:var(--amber)}
+  .pill.green{background:var(--green-bg);color:var(--green)}
+  .pill.red{background:var(--red-bg);color:var(--red)}
+  .pill.purple{background:var(--purple-bg);color:var(--purple)}
+  .pill.grey{background:var(--grey-bg);color:var(--grey)}
 
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-  .note{font-size:12px;color:var(--muted);background:var(--bg);border:1px solid var(--navy-line);border-radius:8px;padding:12px 14px;margin-bottom:14px;line-height:1.6}
-  .kv{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--navy-line);font-size:13px}
-  .kv:last-child{border:none}
-  .kv .k{color:var(--muted)}
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);color:var(--white);padding:11px 20px;border-radius:8px;font-weight:600;font-size:13px;z-index:200;opacity:0;transition:opacity .25s;pointer-events:none}
-  .toast.show{opacity:1}
+  .icon-btn{background:transparent;border:none;color:var(--faint);font-size:15px;padding:6px 8px;border-radius:8px}
+  .icon-btn:hover{background:var(--bg);color:var(--ink)}
+
+  .empty{padding:40px 24px;text-align:center;color:var(--muted)}
+  .empty .big{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:6px}
+
+  /* two-column social */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .col-head{display:flex;align-items:center;gap:9px;font-weight:800;font-size:15px;margin-bottom:14px}
+  .col-head .dot{width:10px;height:10px;border-radius:50%}
+  .content-item{border:1px solid var(--line);border-radius:12px;padding:14px 15px;margin-bottom:12px;background:#fff}
+  .content-item h4{margin:0 0 6px;font-size:14.5px}
+  .content-item .body{font-size:13.5px;color:#33436B;white-space:pre-wrap;line-height:1.55}
+  .content-item .acts{display:flex;gap:8px;margin-top:11px}
+
+  .todo{display:flex;align-items:flex-start;gap:11px;padding:11px 4px;border-bottom:1px solid var(--line)}
+  .todo:last-child{border-bottom:none}
+  .todo input[type=checkbox]{width:19px;height:19px;margin-top:1px;accent-color:var(--accent);flex:none}
+  .todo .t{flex:1;font-size:14.5px}
+  .todo.done .t{text-decoration:line-through;color:var(--faint)}
+
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+  .field input,.field select,.field textarea{
+    width:100%;padding:11px 12px;border:1.5px solid var(--line-strong);border-radius:10px;font-size:14.5px;background:#FBFCFF;
+  }
+  .field textarea{min-height:120px;resize:vertical;line-height:1.55}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--brand-bot);box-shadow:0 0 0 3px var(--blue-bg)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(15,27,61,.5);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+  .overlay.on{display:flex}
+  .modal{background:#fff;border-radius:18px;width:100%;max-width:520px;box-shadow:var(--shadow-lg);max-height:90vh;overflow:auto}
+  .modal-head{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+  .modal-head h3{margin:0;font-size:18px;font-weight:800}
+  .modal-body{padding:22px 24px}
+  .modal-foot{padding:16px 24px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+
+  /* lock gate */
+  .gate{max-width:420px;margin:40px auto;text-align:center;background:#fff;border:1px solid var(--line);border-radius:16px;padding:38px 30px;box-shadow:var(--shadow-sm)}
+  .gate .lockic{width:56px;height:56px;border-radius:14px;background:var(--accent-soft);color:var(--accent-press);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 16px}
+  .gate h3{margin:0 0 6px;font-size:18px}
+  .gate p{color:var(--muted);font-size:13.5px;margin:0 0 18px}
+  .gate input{width:100%;padding:12px 14px;border:1.5px solid var(--line-strong);border-radius:11px;font-size:16px;text-align:center;letter-spacing:2px}
+  .gate input:focus{outline:none;border-color:var(--brand-bot);box-shadow:0 0 0 3px var(--blue-bg)}
+
+  .sync-tag{font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px}
+  .sync-tag .d{width:7px;height:7px;border-radius:50%}
+  .sync-on{background:var(--green-bg);color:var(--green)} .sync-on .d{background:var(--green)}
+  .sync-off{background:var(--grey-bg);color:var(--grey)} .sync-off .d{background:var(--grey)}
+
+  .present-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .chip{display:inline-flex;align-items:center;gap:8px;background:var(--green-bg);color:var(--green);padding:8px 14px;border-radius:999px;font-weight:700;font-size:13.5px}
+  .chip .av{width:22px;height:22px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px}
+  .chip.absent{background:var(--grey-bg);color:var(--grey)} .chip.absent .av{background:var(--faint)}
 
   @media(max-width:860px){
-    .stats{grid-template-columns:repeat(2,1fr)}
-    .grid2{grid-template-columns:1fr}
-    .sidebar{transform:translateX(-100%);transition:transform .22s}
-    .sidebar.open{transform:translateX(0)}
-    .main{margin-left:0}
-    .hamburger{display:block}
-    .scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:35}
-    .scrim.show{display:block}
-  }
-  @media(max-width:520px){
-    .stats{grid-template-columns:1fr}
-    .content{padding:16px}
-    .topbar{padding:0 14px}
+    .shell{flex-direction:column}
+    .sidebar{width:100%;height:auto;position:static;flex-direction:row;flex-wrap:wrap;gap:6px;padding:12px}
+    .side-brand{width:100%;padding-bottom:8px}
+    .nav-group{margin-top:0}.nav-group .label{display:none}
+    .nav-item{width:auto;font-size:13px;padding:8px 10px}
+    .nav-item .lock{margin-left:6px}
+    .side-foot{width:100%;margin-top:6px;display:flex;align-items:center;gap:12px}
+    .side-user{padding:0}.logout{width:auto;padding:8px 14px}
+    .split{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}
+    .content{padding:18px}
+    .topbar{padding:16px 18px}
   }
 </style>
 </head>
 <body>
 
-<!-- ===================== LOGIN ===================== -->
+<!-- ================= LOGIN ================= -->
 <div id="login">
-  <div class="login-card" id="loginCard">
-    <div class="brand">
-      <div class="mark">EV</div>
-      <h1>EduVoyage Operations</h1>
-      <div class="tag">Expert Guidance, Exceptional Journeys</div>
+  <div class="login-card">
+    <div class="brandmark">
+      <div class="logo-tile">EV</div>
+      <div><h1>EduVoyage</h1><p>Operations Workspace</p></div>
     </div>
-    <div id="loginForm">
-      <div class="field"><label>Password</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Enter your password"></div>
-      <button class="btn btn-block" id="loginBtn" onclick="login()">Sign In</button>
-      <div class="login-err" id="loginErr"></div>
-      <div class="hint">EduVoyage private workspace &bull; cloud-synced</div>
+    <div class="field" style="margin-bottom:0">
+      <label for="pw">Team password</label>
+      <input id="pw" type="password" placeholder="Enter the team password" autocomplete="off" />
     </div>
+    <p class="err" id="loginErr"></p>
+    <button class="btn full" id="loginBtn">Sign in</button>
+    <p class="login-hint">One shared login for the whole team. Finances and the Activity Log each need their own code, known only to the admin.</p>
   </div>
 </div>
 
-<!-- ===================== APP ===================== -->
+<!-- ================= APP ================= -->
 <div id="app">
   <div class="shell">
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-head">
-        <div class="mark">EV</div>
-        <div><div class="name">EduVoyage</div><div class="sub">Operations Workspace</div></div>
+    <aside class="sidebar">
+      <div class="side-brand">
+        <div class="logo-tile">EV</div>
+        <div><h1>EduVoyage</h1><p>Operations Workspace</p></div>
       </div>
-      <nav class="nav" id="nav"></nav>
-      <div class="sidebar-foot">
-        <div class="u-name" id="uName">&mdash;</div>
-        <div class="u-role" id="uRole">&mdash;</div>
-        <button class="btn btn-ghost btn-block btn-sm" onclick="logout()">Log Out</button>
+
+      <div class="nav-group">
+        <div class="label">Overview</div>
+        <button class="nav-item" data-page="dashboard"><span class="ic">▤</span> Dashboard</button>
+        <button class="nav-item" data-page="attendance"><span class="ic">◷</span> Daily Sign-in</button>
+      </div>
+
+      <div class="nav-group">
+        <div class="label">Work</div>
+        <button class="nav-item" data-page="clients"><span class="ic">◧</span> Client Work</button>
+        <button class="nav-item" data-page="webinars"><span class="ic">◈</span> Webinars</button>
+        <button class="nav-item" data-page="social"><span class="ic">✦</span> Social Media</button>
+        <button class="nav-item" data-page="services"><span class="ic">❯</span> Services &amp; Info</button>
+        <button class="nav-item" data-page="finances"><span class="ic">▦</span> Finances <span class="lock">🔒</span></button>
+      </div>
+
+      <div class="nav-group">
+        <div class="label">Private</div>
+        <button class="nav-item" data-page="personal"><span class="ic">✎</span> Personal Workspace</button>
+        <button class="nav-item" data-page="activity"><span class="ic">≣</span> Activity Log <span class="lock">🔒</span></button>
+      </div>
+
+      <div class="side-foot">
+        <div class="side-user"><b>EduVoyage Team</b><span id="sideSync"></span></div>
+        <button class="logout" id="logoutBtn">Log out</button>
       </div>
     </aside>
-    <div class="scrim" id="scrim" onclick="toggleSidebar(false)"></div>
+
     <div class="main">
       <div class="topbar">
-        <div style="display:flex;align-items:center;gap:10px">
-          <button class="hamburger" onclick="toggleSidebar(true)">&#9776;</button>
+        <div>
           <h2 id="pageTitle">Dashboard</h2>
+          <div class="sub" id="pageSub"></div>
         </div>
-        <div class="right">
-          <span class="sync"><span class="dot" id="syncDot"></span><span id="syncText">Live</span></span>
-          <span style="font-size:12px;color:var(--muted)" id="topUser"></span>
-        </div>
+        <div id="topAction"></div>
       </div>
-      <div class="content" id="content"></div>
+      <div class="content" id="view"></div>
     </div>
   </div>
 </div>
 
-<!-- ===================== MODAL ===================== -->
+<!-- generic modal -->
 <div class="overlay" id="overlay">
   <div class="modal">
-    <div class="modal-head"><h3 id="modalTitle">Add</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>
-    <div id="modalBody"></div>
-    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn" id="modalSave">Save</button></div>
+    <div class="modal-head"><h3 id="mTitle">Edit</h3><button class="icon-btn" id="mClose" style="font-size:20px">✕</button></div>
+    <div class="modal-body" id="mBody"></div>
+    <div class="modal-foot" id="mFoot"></div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
 <script>
-/* ======================================================================
-   EDUVOYAGE OPERATIONS WORKSPACE v3 — Supabase real-time backend
-   ====================================================================== */
+/* =========================================================================
+   EDUVOYAGE OPERATIONS WORKSPACE
+   -------------------------------------------------------------------------
+   CONFIG — change these three passwords, and (optionally) turn on sync.
+   ========================================================================= */
+const TEAM_PASSWORD = "eduvoyage";     // shared login for everyone
+const FINANCE_CODE  = "money2026";     // needed to open Finances
+const ACTIVITY_CODE = "log2026";       // needed to open Activity Log
 
-/* ---- 1. PASTE YOUR SUPABASE CREDENTIALS HERE ---- */
+/* CROSS-DEVICE SYNC (optional).
+   Leave both blank -> the workspace saves on THIS device only.
+   To sync across phones/laptops: paste your Supabase Project URL + anon key
+   below, and run the 3-line schema in schema.sql once inside Supabase.
+   Everyone then sees the same data live. */
 const SUPABASE_URL      = "https://qoluzahfjvgxsqpssatz.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable__KpMdG9k3Z2aXbS39JaoGg_WB-okR89";
+/* ========================================================================= */
 
-/* Username -> email mapping (must match the two users you create in Supabase) */
-const ADMIN_EMAIL = "admin@eduvoyage.app";
-const CE_EMAIL    = "ce@eduvoyage.app";
-const SM_EMAIL    = "social@eduvoyage.app";
+const STORE_KEY = "eduvoyage_ws_v2";
+const STATE_ID  = "main";
+let sb = null, syncing = false, memoryOnly = false, memoryBlob = null;
 
-/* ---- internals ---- */
-let sb = null;
-let session = null;          // {name, role, email}
-let current = "dashboard";
-let rtChannel = null;
-let rtTimer = null;
-
-const ALL_TABLES = ["clients","attendance","social_media","ce_tasks","todos","ce_reports",
-  "webinars","services","scholarships","revenue","expenses","personal_eduvoyage","personal_waka","activity_log",
-  "weekly_duties","competitor_watch","social_performance","service_info"];
-const HAS_CREATED_BY = new Set(["clients","social_media","todos","ce_reports"]);
-const HAS_UPDATED_AT = new Set(["clients","social_media","ce_tasks","todos","ce_reports","webinars","services","scholarships","revenue","expenses","personal_eduvoyage","personal_waka",
-  "weekly_duties","competitor_watch","social_performance","service_info"]);
-
-/* ---------- helpers ---------- */
-function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
-function naira(n){ const v=Number(n)||0; return "\u20A6"+v.toLocaleString("en-NG",{maximumFractionDigits:2}); }
-function nowStamp(ts){ const d=ts?new Date(ts):new Date(); return d.toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
-function todayISO(){ return new Date().toISOString().slice(0,10); }
-function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2200); }
-function configured(){ return SUPABASE_URL.indexOf("PASTE_")<0 && SUPABASE_ANON_KEY.indexOf("PASTE_")<0; }
-
-/* ---------- data access ---------- */
-async function fetchTable(table, orderCol){
-  const col = orderCol || (table==="activity_log" ? "timestamp" : "created_at");
-  const { data, error } = await sb.from(table).select("*").order(col,{ascending:false});
-  if(error){ throw error; }
-  return data||[];
+/* ---------- seed data (the clients visible in your workspace) ---------- */
+function seed(){
+  return {
+    clients:[
+      {id:id(), inv:"#002", name:"Amos Adimah",       phone:"", service:"PR",                    country:"Canada", status:"In Progress",    follow:""},
+      {id:id(), inv:"",     name:"Mr Temitope Odunsi", phone:"", service:"Study Abroad",          country:"Canada", status:"Submitted",      follow:""},
+      {id:id(), inv:"",     name:"Ms Tangsi",          phone:"", service:"Study Abroad",          country:"Canada", status:"On Hold",        follow:""},
+      {id:id(), inv:"",     name:"Ms Evelyn",          phone:"", service:"Study Abroad",          country:"Canada", status:"On Hold",        follow:""},
+      {id:id(), inv:"",     name:"Fatimo Akerele",     phone:"", service:"Visit Visa Processing", country:"Canada", status:"Visa Reapplied", follow:""},
+      {id:id(), inv:"",     name:"Chizoba Godsave",    phone:"", service:"Study Abroad",          country:"UK",     status:"Submitted",      follow:""}
+    ],
+    roster:["Aminat","Client Executive","Social Media Manager"],
+    attendance:[],   // {name, date, time}
+    webinars:[],     // {id, title, date, topic, status, notes}
+    content:[],      // {id, area:'study'|'travel', title, body, week}
+    finances:[],     // {id, date, desc, type:'in'|'out', amount}
+    todos:[],        // {id, text, done}
+    notes:"",
+    activity:[]      // {ts, msg}
+  };
 }
-async function logActivity(action, module, details, recordId){
+let state = seed();
+
+/* ---------- utilities ---------- */
+function id(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function todayStr(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function esc(s){ return (s==null?"":String(s)).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function naira(n){ return "₦"+Number(n||0).toLocaleString("en-NG"); }
+function fmtDate(s){ if(!s) return "—"; const d=new Date(s); if(isNaN(d)) return esc(s); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}); }
+function fmtDateTime(s){ const d=new Date(s); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short"})+", "+d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}); }
+function log(msg){ state.activity.unshift({ts:new Date().toISOString(), msg}); if(state.activity.length>400) state.activity.pop(); }
+
+/* ---------- persistence (local + optional Supabase) ---------- */
+function saveLocal(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+  catch(e){ memoryOnly=true; memoryBlob=JSON.stringify(state); }
+}
+function loadLocal(){
   try{
-    await sb.from("activity_log").insert({
-      user_name: session?session.name:"-", action, module,
-      details: details||"", record_id: recordId||null,
-      actor_role: session?session.role:null
-    });
-  }catch(e){ /* CE may lack read but can insert; never block main op */ }
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw){ state = Object.assign(seed(), JSON.parse(raw)); return true; }
+  }catch(e){
+    if(memoryBlob){ try{ state=Object.assign(seed(),JSON.parse(memoryBlob)); return true; }catch(_){} }
+  }
+  return false;
+}
+async function save(){
+  saveLocal();
+  if(sb){
+    try{ await sb.from("workspace_state").upsert({id:STATE_ID, data:state, updated_at:new Date().toISOString()}); }
+    catch(e){ console.warn("sync save failed", e); }
+  }
+}
+async function pull(){
+  if(!sb) return;
+  try{
+    const {data,error} = await sb.from("workspace_state").select("data").eq("id",STATE_ID).maybeSingle();
+    if(!error && data && data.data){ state = Object.assign(seed(), data.data); }
+  }catch(e){ console.warn("sync pull failed", e); }
+}
+async function initSync(){
+  if(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase){
+    try{
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      syncing = true;
+      const {data} = await sb.from("workspace_state").select("data").eq("id",STATE_ID).maybeSingle();
+      if(data && data.data){ state = Object.assign(seed(), data.data); }
+      else { await sb.from("workspace_state").upsert({id:STATE_ID, data:state, updated_at:new Date().toISOString()}); }
+      setInterval(async ()=>{ if(document.getElementById("app").style.display!=="none"){ await pull(); renderCurrent(); } }, 15000);
+      return;
+    }catch(e){ console.warn("Supabase init failed, using local storage", e); sb=null; syncing=false; }
+  }
+  loadLocal();
 }
 
-/* ---------- auth ---------- */
-function roleFromEmail(email){
-  if(!email) return null;
-  email = email.toLowerCase();
-  if(email===ADMIN_EMAIL.toLowerCase()) return {role:"admin", name:"Aminat", email};
-  if(email===CE_EMAIL.toLowerCase())    return {role:"ce", name:"Client Executive", email};
-  if(email===SM_EMAIL.toLowerCase())    return {role:"sm", name:"Social Media Manager", email};
-  return {role:"ce", name:email, email}; // unknown account treated as limited
+/* ---------- login ---------- */
+document.getElementById("loginBtn").onclick = tryLogin;
+document.getElementById("pw").addEventListener("keydown", e=>{ if(e.key==="Enter") tryLogin(); });
+function tryLogin(){
+  const v = document.getElementById("pw").value;
+  if(v === TEAM_PASSWORD){
+    document.getElementById("login").style.display="none";
+    document.getElementById("app").style.display="block";
+    renderSyncTag();
+    go("dashboard");
+  } else {
+    document.getElementById("loginErr").textContent = "That password isn't right. Try again.";
+  }
 }
-async function login(){
-  const p = document.getElementById("loginPass").value;
-  const err = document.getElementById("loginErr");
-  const btn = document.getElementById("loginBtn");
-  const email = ADMIN_EMAIL;
-  if(!p){ err.textContent="Enter your password."; return; }
-  err.textContent="Signing in\u2026"; btn.disabled=true;
-  try{
-    const { data, error } = await sb.auth.signInWithPassword({ email, password:p });
-    if(error){ err.textContent = friendlyAuthError(error.message); btn.disabled=false; return; }
-    session = roleFromEmail(data.user.email);
-    err.textContent="";
-    await logActivity("sign in","auth", session.name+" logged in");
-    subscribeRealtime();
-    startApp();
-  }catch(e){ err.textContent="Connection error: "+e.message; }
-  btn.disabled=false;
-}
-function friendlyAuthError(m){
-  if(/invalid login/i.test(m)) return "Invalid username or password.";
-  if(/confirm/i.test(m)) return "This account is not confirmed yet. Enable Auto-Confirm in Supabase.";
-  return m;
-}
-async function logout(){
-  await logActivity("sign out","auth",(session?session.name:"")+" logged out");
-  if(rtChannel){ try{ await sb.removeChannel(rtChannel); }catch(e){} rtChannel=null; }
-  try{ await sb.auth.signOut(); }catch(e){}
-  session=null;
+document.getElementById("logoutBtn").onclick = ()=>{
+  financeUnlocked=false; activityUnlocked=false;
   document.getElementById("app").style.display="none";
   document.getElementById("login").style.display="flex";
-  
-  document.getElementById("loginPass").value="";
-}
-
-/* ---------- realtime ---------- */
-function subscribeRealtime(){
-  if(rtChannel) return;
-  rtChannel = sb.channel("eduvoyage-rt");
-  ALL_TABLES.forEach(t=>{
-    rtChannel.on("postgres_changes",{event:"*",schema:"public",table:t}, ()=>onRealtime(t));
-  });
-  rtChannel.subscribe(status=>{
-    const dot=document.getElementById("syncDot"), txt=document.getElementById("syncText");
-    if(!dot) return;
-    if(status==="SUBSCRIBED"){ dot.classList.remove("off"); txt.textContent="Live"; }
-    else if(status==="CHANNEL_ERROR"||status==="TIMED_OUT"){ dot.classList.add("off"); txt.textContent="Offline"; }
-  });
-}
-function viewTables(key){
-  if(key==="dashboard") return ["clients","revenue","todos","ce_tasks","activity_log"];
-  if(key==="finances")  return ["revenue","expenses","clients"];
-  if(key==="personal")  return ["personal_eduvoyage","personal_waka"];
-  if(key==="activity")  return ["activity_log"];
-  if(key==="attendance")return ["attendance"];
-  if(key==="ceTasks")   return ["weekly_duties","ce_tasks","competitor_watch"];
-  if(key==="social")    return ["social_media","social_performance"];
-  if(CRUD[key])         return [CRUD[key].table];
-  return [];
-}
-function onRealtime(table){
-  if(viewTables(current).includes(table)){
-    clearTimeout(rtTimer);
-    rtTimer=setTimeout(()=>show(current),250);
-  }
-}
-
-/* ---------- module registry ---------- */
-const NAV = [
-  { key:"dashboard",    label:"Dashboard",            group:"Overview" },
-  { key:"attendance",   label:"Attendance",           group:"Overview" },
-  { key:"clients",      label:"Client Work",          group:"Work" },
-  { key:"webinars",     label:"Webinars",             group:"Work" },
-  { key:"scholarships", label:"Scholarship Advisory", group:"Work" },
-  { key:"services",     label:"Services & Info",      group:"Work" },
-  { key:"finances",     label:"Finances",             group:"Work" },
-  { key:"personal",     label:"Personal Workspace",   group:"Private" },
-  { key:"activity",     label:"Activity Log",         group:"Private" },
-  { key:"settings",     label:"Settings",             group:"System" }
-];
-
-const ST = {
-  client:["In Progress","Submitted","Visa Approved","Visa Rejected","Visa Reapplied","On Hold","Completed"],
-  social:["Draft","Scheduled","Published"],
-  ceTask:["Pending","Done"],
-  todo:["Pending","In Progress","Done"],
-  scholarship:["Open","Applied","Closed"],
-  webinar:["Upcoming","Done","Cancelled"],
-  contentType:["Carousel","Flyer","Reel","Video","Talking-head Video","Meme"],
-  brand:["Study Abroad","Travel & Tourism"]
+  document.getElementById("pw").value=""; document.getElementById("loginErr").textContent="";
 };
-const CE_OPTS = [{value:"ce",label:"Client Executive"},{value:"admin",label:"Admin (Aminat)"}];
-const CE_MAP  = {ce:"Client Executive", admin:"Admin"};
+function renderSyncTag(){
+  const on = syncing;
+  document.getElementById("sideSync").innerHTML =
+    on ? '<span class="sync-tag sync-on"><span class="d"></span>Synced across devices</span>'
+       : '<span class="sync-tag sync-off"><span class="d"></span>Saved on this device</span>';
+}
 
-const CRUD = {
-  clients:{ table:"clients", title:"Client Work", addLabel:"Add Client",
-    fields:[
-      {k:"client_name",label:"Client Name",type:"text",req:true},
-      {k:"phone",label:"Phone Number",type:"text"},
-      {k:"invoice_no",label:"Invoice No",type:"text"},
-      {k:"service",label:"Service",type:"text"},
-      {k:"country",label:"Country",type:"text"},
-      {k:"status",label:"Status",type:"select",opts:ST.client},
-      {k:"last_followup",label:"Last Follow-Up",type:"date"},
-      {k:"google_drive_link",label:"Google Drive Link",type:"text"},
-      {k:"balance",label:"Balance (\u20A6)",type:"number"}
-    ],
-    cols:[
-      {k:"invoice_no",label:"Inv#"},{k:"client_name",label:"Client"},{k:"phone",label:"Phone"},
-      {k:"service",label:"Service"},{k:"country",label:"Country"},
-      {k:"status",label:"Status",pill:true},{k:"last_followup",label:"Last Follow-Up"},
-      {k:"google_drive_link",label:"Drive",link:true},{k:"balance",label:"Balance",money:true}
-    ]},
-  social:{ table:"social_media", title:"Social Media", addLabel:"Add Post",
-    fields:[
-      {k:"brand",label:"Brand",type:"select",opts:ST.brand},
-      {k:"platform",label:"Platform",type:"select",opts:["Instagram","TikTok","Facebook"]},
-      {k:"content_type",label:"Content Type",type:"select",opts:ST.contentType},
-      {k:"topic",label:"Topic",type:"text",req:true},
-      {k:"post_date",label:"Date",type:"date"},
-      {k:"status",label:"Status",type:"select",opts:ST.social}
-    ],
-    cols:[{k:"brand",label:"Brand"},{k:"platform",label:"Platform"},{k:"content_type",label:"Type"},{k:"topic",label:"Topic"},{k:"post_date",label:"Date"},{k:"status",label:"Status",pill:true}]},
-  ceTasks:{ table:"ce_tasks", title:"CE Management", addLabel:"Add Task",
-    fields:[
-      {k:"task",label:"Task",type:"text",req:true},
-      {k:"task_date",label:"Date",type:"date"},
-      {k:"status",label:"Status",type:"select",opts:ST.ceTask},
-      {k:"notes",label:"Notes",type:"textarea"}
-    ],
-    cols:[{k:"task",label:"Task"},{k:"task_date",label:"Date"},{k:"status",label:"Status",pill:true},{k:"notes",label:"Notes"}]},
-  todos:{ table:"todos", title:"To-Do", addLabel:"Add To-Do",
-    fields:[
-      {k:"task",label:"Task",type:"text",req:true},
-      {k:"priority",label:"Priority",type:"select",opts:["High","Medium","Low"]},
-      {k:"status",label:"Status",type:"select",opts:ST.todo}
-    ],
-    cols:[{k:"task",label:"Task"},{k:"priority",label:"Priority",prio:true},{k:"status",label:"Status",pill:true}]},
-  ceReports:{ table:"ce_reports", title:"CE Reports", addLabel:"Add Report", export:true,
-    fields:[
-      {k:"week",label:"Week",type:"text",req:true},
-      {k:"total_leads",label:"Total Leads",type:"number"},
-      {k:"leads_followed_up",label:"Leads Followed Up",type:"number"},
-      {k:"converted_leads",label:"Converted Leads",type:"number"},
-      {k:"pending_leads",label:"Pending / In Conversation",type:"number"},
-      {k:"lost_leads",label:"Lost / No Response",type:"number"},
-      {k:"client_responses",label:"Client Responses / Objections",type:"textarea"},
-      {k:"ce_opinion",label:"CE's Opinion / Thoughts on Leads",type:"textarea"},
-      {k:"feedback",label:"Feedback / Notes",type:"textarea"}
-    ],
-    cols:[{k:"week",label:"Week"},{k:"total_leads",label:"Total Leads"},{k:"converted_leads",label:"Converted"},{k:"feedback",label:"Feedback"}]},
-  webinars:{ table:"webinars", title:"Webinars", addLabel:"Add Webinar",
-    fields:[
-      {k:"title",label:"Title",type:"text",req:true},
-      {k:"speaker",label:"Speaker",type:"text"},
-      {k:"event_date",label:"Date",type:"date"},
-      {k:"event_time",label:"Time",type:"time"},
-      {k:"status",label:"Status",type:"select",opts:ST.webinar},
-      {k:"description",label:"Description",type:"textarea"}
-    ],
-    cols:[{k:"title",label:"Title"},{k:"speaker",label:"Speaker"},{k:"event_date",label:"Date"},{k:"event_time",label:"Time"},{k:"status",label:"Status",pill:true},{k:"description",label:"Description"}]},
-  services:{ table:"services", title:"Services & Pricing", addLabel:"Add Service",
-    fields:[
-      {k:"service_name",label:"Service Name",type:"text",req:true},
-      {k:"description",label:"Description",type:"textarea"},
-      {k:"price",label:"Price (\u20A6)",type:"number"}
-    ],
-    cols:[{k:"service_name",label:"Service"},{k:"description",label:"Description"},{k:"price",label:"Price",money:true}]},
-  scholarships:{ table:"scholarships", title:"Scholarship Advisory", addLabel:"Add Scholarship",
-    fields:[
-      {k:"country",label:"Country",type:"text",req:true},
-      {k:"destination",label:"Destination / School",type:"text"},
-      {k:"deadline",label:"Deadline",type:"date"},
-      {k:"status",label:"Status",type:"select",opts:ST.scholarship}
-    ],
-    cols:[{k:"country",label:"Country"},{k:"destination",label:"Destination"},{k:"deadline",label:"Deadline"},{k:"status",label:"Status",pill:true}]},
-  weeklyDuties:{ table:"weekly_duties", title:"Fixed Weekly Duties", addLabel:"Add Duty",
-    fields:[
-      {k:"duty",label:"Duty",type:"text",req:true},
-      {k:"notes",label:"Notes",type:"textarea"}
-    ],
-    cols:[{k:"duty",label:"Weekly Duty"},{k:"notes",label:"Notes"}]},
-  competitors:{ table:"competitor_watch", title:"Competitor Watch", addLabel:"Add Competitor",
-    fields:[
-      {k:"week_of",label:"Week Of",type:"date"},
-      {k:"competitor",label:"Competitor",type:"text",req:true},
-      {k:"trending_topics",label:"Trending Topics",type:"textarea"},
-      {k:"viral_content",label:"Viral Content",type:"textarea"},
-      {k:"new_offers",label:"New Offers",type:"textarea"},
-      {k:"popular_questions",label:"Popular Questions",type:"textarea"},
-      {k:"notes",label:"Notes",type:"textarea"}
-    ],
-    cols:[{k:"week_of",label:"Week Of"},{k:"competitor",label:"Competitor"},{k:"trending_topics",label:"Trending"},{k:"viral_content",label:"Viral"},{k:"new_offers",label:"Offers"},{k:"popular_questions",label:"Questions"}]},
-  socialPerf:{ table:"social_performance", title:"Monthly Performance", addLabel:"Add Month",
-    fields:[
-      {k:"month",label:"Month",type:"text",req:true},
-      {k:"brand",label:"Brand",type:"select",opts:ST.brand},
-      {k:"best_performing_video",label:"Best Performing Video",type:"text"},
-      {k:"most_saved_video",label:"Most Saved Video",type:"text"},
-      {k:"most_shared_video",label:"Most Shared Video",type:"text"},
-      {k:"most_comments_video",label:"Most Comments Video",type:"text"},
-      {k:"lead_generating_video",label:"Lead-Generating Video",type:"text"},
-      {k:"notes",label:"Notes",type:"textarea"}
-    ],
-    cols:[{k:"month",label:"Month"},{k:"brand",label:"Brand"},{k:"best_performing_video",label:"Best Performing"},{k:"most_saved_video",label:"Most Saved"},{k:"most_shared_video",label:"Most Shared"},{k:"most_comments_video",label:"Most Comments"},{k:"lead_generating_video",label:"Lead-Generating"}]},
-  revenueStudy:{ table:"revenue", title:"Study Abroad Income", addLabel:"Add Income",
-    fields:[
-      {k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},
-      {k:"service",label:"Service / Description",type:"text"},
-      {k:"amount",label:"Amount Received (\u20A6)",type:"number",req:true}
-    ],
-    cols:[{k:"date",label:"Date"},{k:"client",label:"Client"},{k:"service",label:"Service"},{k:"amount",label:"Amount",money:true}]},
-  revenueTours:{ table:"revenue", title:"Travel Package", addLabel:"Add Package",
-    fields:[
-      {k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},
-      {k:"service",label:"Package Description",type:"text"},
-      {k:"amount",label:"Package Price Charged (\u20A6)",type:"number",req:true},
-      {k:"cost",label:"Total Amount Spent on Package (\u20A6)",type:"number"}
-    ],
-    cols:[{k:"date",label:"Date"},{k:"client",label:"Client"},{k:"service",label:"Package"},{k:"amount",label:"Charged",money:true},{k:"cost",label:"Spent",money:true}]},
-  revenueFlights:{ table:"revenue", title:"Flight Booking", addLabel:"Add Flight",
-    fields:[
-      {k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},
-      {k:"service",label:"Route / Destination",type:"text"},
-      {k:"amount",label:"Amount Charged (\u20A6)",type:"number",req:true},
-      {k:"cost",label:"Ticket Cost (\u20A6)",type:"number"}
-    ],
-    cols:[{k:"date",label:"Date"},{k:"client",label:"Client"},{k:"service",label:"Route"},{k:"amount",label:"Charged",money:true},{k:"cost",label:"Ticket Cost",money:true}]},
-  serviceStudy:{ table:"service_info", title:"Study Abroad Services", addLabel:"Add Country / Service",
-    fields:[
-      {k:"country",label:"Country",type:"text",req:true},
-      {k:"service_name",label:"Service Name / Visa Type",type:"text"},
-      {k:"requirements",label:"Requirements (paste full details here)",type:"textarea"},
-      {k:"notes",label:"Processing Time / Notes",type:"textarea"}
-    ],
-    cols:[{k:"country",label:"Country"},{k:"service_name",label:"Service"},{k:"requirements",label:"Requirements"},{k:"notes",label:"Notes"}]},
-  serviceTours:{ table:"service_info", title:"Travel & Tours Services", addLabel:"Add Destination",
-    fields:[
-      {k:"country",label:"Destination / Country",type:"text",req:true},
-      {k:"service_name",label:"Package / Tour Name",type:"text"},
-      {k:"requirements",label:"What\u2019s Included / Requirements",type:"textarea"},
-      {k:"notes",label:"Price Range / Notes",type:"textarea"}
-    ],
-    cols:[{k:"country",label:"Destination"},{k:"service_name",label:"Package"},{k:"requirements",label:"Details"},{k:"notes",label:"Notes"}]}
+/* ---------- router ---------- */
+let current = "dashboard";
+let financeUnlocked=false, activityUnlocked=false;
+const TITLES = {
+  dashboard:["Dashboard","A quick look at where things stand today"],
+  attendance:["Daily Sign-in","Sign in for the day and see who's online"],
+  clients:["Client Work","Every active client and where they are"],
+  webinars:["Webinars","Sessions planned and delivered"],
+  social:["Social Media","This week's content, ready to post"],
+  services:["Services & Info","What we offer and what it costs"],
+  finances:["Finances","Money in, money out"],
+  personal:["Personal Workspace","Your own space"],
+  activity:["Activity Log","Everything that's happened in here"]
 };
-
-/* ---------- boot ---------- */
-function startApp(){
-  document.getElementById("login").style.display="none";
-  document.getElementById("app").style.display="block";
-  document.getElementById("uName").textContent=session.name;
-  const roleLong = session.role==="admin"?"Administrator":(session.role==="ce"?"Client Executive":"Social Media Manager");
-  const roleShort = session.role==="admin"?"Admin":(session.role==="ce"?"CE":"Social");
-  document.getElementById("uRole").textContent=roleLong;
-  document.getElementById("topUser").textContent=session.name+" \u00B7 "+roleShort;
-  buildNav();
-  current = session.role==="admin" ? "dashboard" : "attendance";
-  show(current);
+function go(page){
+  current = page;
+  document.querySelectorAll(".nav-item").forEach(b=> b.classList.toggle("active", b.dataset.page===page));
+  document.getElementById("pageTitle").textContent = TITLES[page][0];
+  document.getElementById("pageSub").textContent = TITLES[page][1];
+  document.getElementById("topAction").innerHTML = "";
+  renderCurrent();
 }
-function canAccess(item){ return true; }
-function buildNav(){
-  let html="", last="";
-  NAV.filter(canAccess).forEach(it=>{
-    if(it.group!==last){ html+='<div class="nav-sep">'+esc(it.group)+'</div>'; last=it.group; }
-    html+='<button class="nav-item" data-key="'+it.key+'" onclick="show(\''+it.key+'\')">'+esc(it.label)+'</button>';
-  });
-  document.getElementById("nav").innerHTML=html;
-}
-function setActive(key){ document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active",b.dataset.key===key)); }
-function toggleSidebar(open){
-  const sb2=document.getElementById("sidebar"), sc=document.getElementById("scrim");
-  if(open===undefined) open=!sb2.classList.contains("open");
-  sb2.classList.toggle("open",open); sc.classList.toggle("show",open);
+document.querySelectorAll(".nav-item").forEach(b=> b.onclick = ()=>go(b.dataset.page));
+function renderCurrent(){ ({dashboard:renderDashboard,attendance:renderAttendance,clients:renderClients,webinars:renderWebinars,social:renderSocial,services:renderServices,finances:renderFinances,personal:renderPersonal,activity:renderActivity}[current])(); }
+const view = ()=>document.getElementById("view");
+function topBtn(label, fn){
+  const el=document.getElementById("topAction");
+  const b=document.createElement("button"); b.className="btn"; b.textContent=label; b.onclick=fn;
+  el.innerHTML=""; el.appendChild(b);
 }
 
-async function show(key){
-  const item=NAV.find(n=>n.key===key);
-  if(item && !canAccess(item)) key="attendance";
-  current=key; setActive(key); toggleSidebar(false);
-  document.getElementById("pageTitle").textContent=(NAV.find(n=>n.key===key)||{}).label||"Workspace";
-  const c=document.getElementById("content");
-  c.innerHTML="<div class='panel'><div class='empty'>Loading\u2026</div></div>";
-  try{
-    let html;
-    if(key==="dashboard")        html=await viewDashboard();
-    else if(key==="attendance")  html=await viewAttendance();
-    else if(key==="finances")    html=await viewFinances();
-    else if(key==="services")    html=await viewServices();
-    else if(key==="personal")    html=await viewPersonal();
-    else if(key==="activity")    html=await viewActivity();
-    else if(key==="settings")    html=await viewSettings();
-    else if(CRUD[key])           html=await viewCRUD(key);
-    else html="<div class='panel'><div class='empty'>Module not found.</div></div>";
-    if(current===key){ c.innerHTML=html; window.scrollTo(0,0); }
-  }catch(e){
-    c.innerHTML="<div class='panel'><div class='empty'>Could not load data.<br><span style='color:var(--danger)'>"+esc(e.message||e)+"</span></div></div>";
-  }
+/* ---------- status pill colour map ---------- */
+const STATUS = {
+  "New":"blue","In Progress":"blue","Submitted":"amber","On Hold":"grey",
+  "Visa Reapplied":"purple","Approved":"green","Refused":"red","Completed":"green","Deferred":"amber"
+};
+const STATUS_LIST = Object.keys(STATUS);
+function pill(status){ return `<span class="pill ${STATUS[status]||"grey"}">${esc(status||"—")}</span>`; }
+
+/* ============================ PAGES ============================ */
+
+function renderDashboard(){
+  const t=todayStr();
+  const inToday = state.attendance.filter(a=>a.date===t);
+  const contentThisWeek = state.content.length;
+  const active = state.clients.length;
+  const submitted = state.clients.filter(c=>c.status==="Submitted").length;
+  const recent = state.activity.slice(0,6);
+  view().innerHTML = `
+    <div class="kpis">
+      <div class="kpi accent"><div class="n">${active}</div><div class="l">Active clients</div></div>
+      <div class="kpi"><div class="n">${inToday.length}</div><div class="l">Signed in today</div></div>
+      <div class="kpi"><div class="n">${submitted}</div><div class="l">Applications submitted</div></div>
+      <div class="kpi"><div class="n">${contentThisWeek}</div><div class="l">Content pieces ready</div></div>
+    </div>
+    <div class="card pad" style="margin-bottom:20px">
+      <div class="section-title"><span class="tick"></span>Who's in today</div>
+      ${inToday.length ? `<div class="present-row">${inToday.map(a=>`<span class="chip"><span class="av">${esc(a.name[0]||"?")}</span>${esc(a.name)} · ${esc(a.time)}</span>`).join("")}</div>`
+        : `<p class="muted" style="margin:10px 0 0">Nobody has signed in yet today.</p>`}
+    </div>
+    <div class="card pad">
+      <div class="section-title"><span class="tick"></span>Recent updates</div>
+      ${recent.length ? recent.map(a=>`<div style="display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line)"><span style="font-size:14px">${esc(a.msg)}</span><span class="muted" style="font-size:12.5px;white-space:nowrap">${fmtDateTime(a.ts)}</span></div>`).join("")
+        : `<p class="muted" style="margin:10px 0 0">No activity recorded yet.</p>`}
+    </div>`;
 }
 
-/* ---------- pills ---------- */
-function pill(val){
-  if(val==null||val==="") return "<span class='pill muted'>&mdash;</span>";
-  const v=String(val).toLowerCase(); let cls="";
-  if(["completed","approved","published","done","applied","visa approved"].includes(v)) cls="ok";
-  else if(["rejected","visa rejected"].includes(v)) cls="danger";
-  else if(["pending","scheduled","in progress","submitted","lead","open","draft","on hold","upcoming","visa reapplied"].includes(v)) cls="warn";
-  return "<span class='pill "+cls+"'>"+esc(val)+"</span>";
-}
-function prioPill(val){ const v=String(val||"").toLowerCase(); let cls="muted"; if(v==="high")cls="warn"; if(v==="low")cls="ok"; return "<span class='pill "+cls+"'>"+esc(val||"\u2014")+"</span>"; }
-
-/* ---------- Dashboard ---------- */
-async function viewDashboard(){
+/* ---------- Attendance / daily sign-in ---------- */
+function renderAttendance(){
+  const t=todayStr();
   const now=new Date();
-  const monthStr=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
-  const monthLabel=now.toLocaleString("en-GB",{month:"long",year:"numeric"});
-  const [clients,revenue,expenses,activity]=await Promise.all([
-    fetchTable("clients"),fetchTable("revenue"),fetchTable("expenses"),fetchTable("activity_log")
-  ]);
-  const activeClients=clients.filter(c=>String(c.status).toLowerCase()!=="completed").length;
-  const outstanding=clients.reduce((s,c)=>s+(Number(c.balance)||0),0);
-  const mRev=revenue.filter(r=>String(r.date||"").startsWith(monthStr));
-  const mExp=expenses.filter(e=>String(e.date||"").startsWith(monthStr));
-  const mRevTotal=mRev.reduce((s,r)=>s+(Number(r.amount)||0),0);
-  const mExpTotal=mExp.reduce((s,e)=>s+(Number(e.amount)||0),0);
-  const mNet=mRevTotal-mExpTotal;
-  const recent=activity.slice(0,10);
-  const rows=recent.length?recent.map(a=>"<tr><td style='white-space:nowrap;color:var(--muted)'>"+esc(nowStamp(a.timestamp))+"</td><td>"+esc(a.action)+"</td><td style='color:var(--muted)'>"+esc(a.module)+(a.details?" \u2014 "+esc(a.details):"")+"</td></tr>").join(""):"<tr><td colspan='3' class='empty'>No activity yet.</td></tr>";
-  return `
-    <div class="stats">
-      <div class="stat"><div class="label">Active Clients</div><div class="value">${activeClients}</div></div>
-      <div class="stat"><div class="label">${monthLabel} Revenue</div><div class="value gold">${naira(mRevTotal)}</div></div>
-      <div class="stat"><div class="label">${monthLabel} Expenses</div><div class="value">${naira(mExpTotal)}</div></div>
-      <div class="stat"><div class="label">Outstanding Balance</div><div class="value">${naira(outstanding)}</div></div>
+  const open = now.getHours()>=10;                 // earliest 10:00
+  const inToday = state.attendance.filter(a=>a.date===t);
+  const signedNames = inToday.map(a=>a.name);
+  const roster = state.roster;
+  topBtn("Manage names", editRoster);
+  view().innerHTML = `
+    <div class="card pad" style="margin-bottom:20px">
+      <div class="row-between">
+        <div class="section-title"><span class="tick"></span>Sign in for ${now.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})}</div>
+        ${open ? "" : `<span class="pill amber">Opens at 10:00 AM</span>`}
+      </div>
+      ${open ? `
+        <p class="muted" style="margin:6px 0 14px">Tap your name to mark yourself in for today.</p>
+        <div class="present-row">
+          ${roster.map(n=>{
+            const inHere = signedNames.includes(n);
+            return `<button class="chip ${inHere?"":"absent"}" style="border:none;cursor:${inHere?"default":"pointer"}" ${inHere?"disabled":`onclick="signIn('${esc(n)}')"`}>
+              <span class="av">${esc(n[0]||"?")}</span>${esc(n)} ${inHere?"· in":""}</button>`;
+          }).join("")}
+        </div>`
+      : `<p class="muted" style="margin:8px 0 0">Sign-in opens each day at 10:00 AM. Check back then.</p>`}
     </div>
-    <div class="panel">
-      <div class="panel-head"><div><h3>${monthLabel} — Net</h3><div class="panel-sub">Revenue minus expenses this month</div></div>
-      <span style="font-size:22px;font-weight:700;color:${mNet>=0?"var(--ok)":"var(--danger)"}">${naira(mNet)}</span></div>
-    </div>
-    <div class="panel">
-      <div class="panel-head"><div><h3>Recent Activity</h3><div class="panel-sub">Live log</div></div></div>
-      <div class="table-wrap"><table><thead><tr><th>When</th><th>Action</th><th>Details</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="card pad">
+      <div class="section-title"><span class="tick"></span>Signed in today (${inToday.length})</div>
+      ${inToday.length ? `<div class="present-row">${inToday.map(a=>`<span class="chip"><span class="av">${esc(a.name[0]||"?")}</span>${esc(a.name)} · ${esc(a.time)}</span>`).join("")}</div>`
+        : `<p class="muted" style="margin:10px 0 0">No sign-ins yet.</p>`}
     </div>`;
 }
+window.signIn = async function(name){
+  const t=todayStr();
+  if(state.attendance.some(a=>a.date===t && a.name===name)) return;
+  const time=new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+  state.attendance.push({name, date:t, time});
+  log(`${name} signed in at ${time}`);
+  await save(); renderAttendance();
+};
+function editRoster(){
+  openModal("Team names", `
+    <p class="muted" style="margin-top:0">One name per line. These are the names that appear on the sign-in screen.</p>
+    <div class="field"><textarea id="rosterBox">${esc(state.roster.join("\n"))}</textarea></div>
+  `, async ()=>{
+    const lines=document.getElementById("rosterBox").value.split("\n").map(s=>s.trim()).filter(Boolean);
+    state.roster = lines.length?lines:["Aminat"];
+    await save(); closeModal(); renderAttendance();
+  });
+}
 
-/* ---------- Attendance (immutable) ---------- */
-async function viewAttendance(){
-  const list=await fetchTable("attendance");
-  const rows=list.length?list.map(a=>"<tr><td>"+esc(a.name)+"</td><td>"+esc(a.date)+"</td><td>"+esc(a.time_in)+"</td></tr>").join(""):"<tr><td colspan='3' class='empty'>No sign-ins recorded yet.</td></tr>";
-  return `
-    <div class="panel">
-      <div class="panel-head"><div><h3>Daily Sign-In</h3><div class="panel-sub">Permanent records &mdash; cannot be edited or deleted.</div></div>
-      <button class="btn" onclick="signIn()">Sign In Now</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Name</th><th>Date</th><th>Time In</th></tr></thead><tbody>${rows}</tbody></table></div>
+/* ---------- Client Work ---------- */
+function renderClients(){
+  topBtn("Add client", ()=>clientForm());
+  const rows = state.clients.map(c=>`
+    <tr>
+      <td class="muted">${c.inv?esc(c.inv):'<span class="dash">—</span>'}</td>
+      <td class="client-name">${esc(c.name)}</td>
+      <td>${c.phone?esc(c.phone):'<span class="dash">—</span>'}</td>
+      <td>${esc(c.service)}</td>
+      <td>${esc(c.country)}</td>
+      <td>${pill(c.status)}</td>
+      <td>${c.follow?fmtDate(c.follow):'<span class="dash">—</span>'}</td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="icon-btn" onclick="clientForm('${c.id}')">✎</button>
+        <button class="icon-btn" onclick="delClient('${c.id}')">🗑</button>
+      </td>
+    </tr>`).join("");
+  view().innerHTML = `
+    <div class="card">
+      <div class="pad" style="padding-bottom:6px"><div class="section-title"><span class="tick"></span>Active clients (${state.clients.length})</div></div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Inv#</th><th>Client</th><th>Phone</th><th>Service</th><th>Country</th><th>Status</th><th>Last follow-up</th><th></th></tr></thead>
+          <tbody>${rows || `<tr><td colspan="8" class="empty"><div class="big">No clients yet</div>Add your first client to start tracking.</td></tr>`}</tbody>
+        </table>
+      </div>
     </div>`;
 }
-async function signIn(){
-  const t=new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
-  const {error}=await sb.from("attendance").insert({name:session.name,date:todayISO(),time_in:t});
-  if(error){ toast("Error: "+error.message); return; }
-  await logActivity("add","attendance",session.name+" signed in");
-  toast("Signed in"); show("attendance");
-}
+window.clientForm = function(cid){
+  const c = cid ? state.clients.find(x=>x.id===cid) : {inv:"",name:"",phone:"",service:"Study Abroad",country:"Canada",status:"New",follow:""};
+  openModal(cid?"Edit client":"Add client", `
+    <div class="grid2">
+      <div class="field"><label>Invoice #</label><input id="f_inv" value="${esc(c.inv)}" placeholder="#003"></div>
+      <div class="field"><label>Client name</label><input id="f_name" value="${esc(c.name)}" placeholder="Full name"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Phone</label><input id="f_phone" value="${esc(c.phone)}" placeholder="Optional"></div>
+      <div class="field"><label>Service</label><input id="f_service" value="${esc(c.service)}" placeholder="Study Abroad"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Country</label><input id="f_country" value="${esc(c.country)}" placeholder="Canada"></div>
+      <div class="field"><label>Status</label><select id="f_status">${STATUS_LIST.map(s=>`<option ${s===c.status?"selected":""}>${s}</option>`).join("")}</select></div>
+    </div>
+    <div class="field"><label>Last follow-up</label><input id="f_follow" type="date" value="${esc(c.follow)}"></div>
+  `, async ()=>{
+    const name=document.getElementById("f_name").value.trim();
+    if(!name){ alert("Client name is needed."); return; }
+    const data={inv:document.getElementById("f_inv").value.trim(),name,phone:document.getElementById("f_phone").value.trim(),
+      service:document.getElementById("f_service").value.trim()||"—",country:document.getElementById("f_country").value.trim()||"—",
+      status:document.getElementById("f_status").value,follow:document.getElementById("f_follow").value};
+    if(cid){ Object.assign(c,data); log(`Updated client ${name}`); }
+    else { state.clients.push(Object.assign({id:id()},data)); log(`Added client ${name}`); }
+    await save(); closeModal(); renderClients();
+  });
+};
+window.delClient = function(cid){
+  const c=state.clients.find(x=>x.id===cid); if(!c) return;
+  confirmModal(`Remove ${esc(c.name)} from the client list?`, async ()=>{
+    state.clients=state.clients.filter(x=>x.id!==cid); log(`Removed client ${c.name}`); await save(); closeModal(); renderClients();
+  });
+};
 
-/* ---------- generic CRUD ---------- */
-function sectionTable(cfgKey, data, opts){
-  opts=opts||{};
-  const cfg=CRUD[cfgKey];
-  const ro=!!opts.readOnly;
-  const head=cfg.cols.map(c=>"<th>"+esc(c.label)+"</th>").join("")+(ro?"":"<th style='text-align:right'>Actions</th>");
-  const cell=(c,it)=>{
-    let v=it[c.k];
-    if(c.money) return "<td>"+naira(v)+"</td>";
-    if(c.pill) return "<td>"+pill(v)+"</td>";
-    if(c.prio) return "<td>"+prioPill(v)+"</td>";
-    if(c.map)  return "<td>"+esc(c.map[v]||v||"\u2014")+"</td>";
-    if(c.link) return "<td>"+(v?"<a href='"+esc(v)+"' target='_blank' rel='noopener'>Open</a>":"<span style='color:var(--muted)'>&mdash;</span>")+"</td>";
-    return "<td>"+(v?esc(v):"<span style='color:var(--muted)'>&mdash;</span>")+"</td>";
+/* ---------- Webinars ---------- */
+function renderWebinars(){
+  topBtn("Add webinar", ()=>webinarForm());
+  const rows = state.webinars.map(w=>`
+    <tr>
+      <td class="client-name">${esc(w.title)}</td>
+      <td>${fmtDate(w.date)}</td>
+      <td>${esc(w.topic)||'<span class="dash">—</span>'}</td>
+      <td>${pill(w.status)}</td>
+      <td class="muted" style="max-width:240px">${esc(w.notes)||""}</td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="icon-btn" onclick="webinarForm('${w.id}')">✎</button>
+        <button class="icon-btn" onclick="delWebinar('${w.id}')">🗑</button>
+      </td>
+    </tr>`).join("");
+  view().innerHTML=`
+    <div class="card">
+      <div class="pad" style="padding-bottom:6px"><div class="section-title"><span class="tick"></span>Webinars (${state.webinars.length})</div></div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Title</th><th>Date</th><th>Topic</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="6" class="empty"><div class="big">No webinars yet</div>Plan your next session.</td></tr>`}</tbody>
+      </table></div>
+    </div>`;
+}
+window.webinarForm=function(wid){
+  const w = wid?state.webinars.find(x=>x.id===wid):{title:"",date:"",topic:"",status:"New",notes:""};
+  openModal(wid?"Edit webinar":"Add webinar",`
+    <div class="field"><label>Title</label><input id="w_title" value="${esc(w.title)}" placeholder="e.g. Canada study permit Q&A"></div>
+    <div class="grid2">
+      <div class="field"><label>Date</label><input id="w_date" type="date" value="${esc(w.date)}"></div>
+      <div class="field"><label>Status</label><select id="w_status">${["New","In Progress","Completed"].map(s=>`<option ${s===w.status?"selected":""}>${s}</option>`).join("")}</select></div>
+    </div>
+    <div class="field"><label>Topic</label><input id="w_topic" value="${esc(w.topic)}" placeholder="What it covers"></div>
+    <div class="field"><label>Notes</label><textarea id="w_notes" style="min-height:80px">${esc(w.notes)}</textarea></div>
+  `, async ()=>{
+    const title=document.getElementById("w_title").value.trim(); if(!title){alert("Title is needed.");return;}
+    const data={title,date:document.getElementById("w_date").value,topic:document.getElementById("w_topic").value.trim(),
+      status:document.getElementById("w_status").value,notes:document.getElementById("w_notes").value.trim()};
+    if(wid){Object.assign(w,data);log(`Updated webinar ${title}`);}else{state.webinars.push(Object.assign({id:id()},data));log(`Added webinar ${title}`);}
+    await save(); closeModal(); renderWebinars();
+  });
+};
+window.delWebinar=function(wid){ const w=state.webinars.find(x=>x.id===wid); confirmModal(`Delete webinar "${esc(w.title)}"?`, async ()=>{ state.webinars=state.webinars.filter(x=>x.id!==wid); await save(); closeModal(); renderWebinars(); }); };
+
+/* ---------- Social Media ---------- */
+function renderSocial(){
+  topBtn("Add content", ()=>contentForm());
+  const col = (area,label,color)=>{
+    const items = state.content.filter(c=>c.area===area);
+    return `<div class="card pad">
+      <div class="col-head"><span class="dot" style="background:${color}"></span>${label} <span class="muted" style="font-weight:600;font-size:13px">(${items.length})</span></div>
+      ${items.length? items.map(c=>`
+        <div class="content-item">
+          <h4>${esc(c.title)||"Untitled"}</h4>
+          ${c.week?`<div class="muted" style="font-size:12px;margin-bottom:6px">${esc(c.week)}</div>`:""}
+          <div class="body">${esc(c.body)}</div>
+          <div class="acts">
+            <button class="btn sm" onclick="copyContent('${c.id}',this)">Copy</button>
+            <button class="btn sm ghost" onclick="contentForm('${c.id}')">Edit</button>
+            <button class="icon-btn" onclick="delContent('${c.id}')">🗑</button>
+          </div>
+        </div>`).join("")
+        : `<p class="muted">Nothing here yet for this week.</p>`}
+    </div>`;
   };
-  const rowHtml=(it)=>{
-    const tds=cfg.cols.map(c=>cell(c,it)).join("");
-    const act = ro?"":"<td><div class='row-actions'>"+
-      "<button class='icon-btn' onclick=\"openForm('"+cfgKey+"','"+it.id+"')\">Edit</button>"+
-      "<button class='icon-btn del' onclick=\"removeItem('"+cfg.table+"','"+it.id+"','"+(opts.parent||cfgKey)+"')\">Delete</button>"+
-      "</div></td>";
-    return "<tr>"+tds+act+"</tr>";
-  };
-  const span=cfg.cols.length+(ro?0:1);
-  const body=data.length?data.map(rowHtml).join(""):"<tr><td colspan='"+span+"' class='empty'>"+esc(opts.emptyMsg||"Nothing here yet.")+"</td></tr>";
-  return "<div class='table-wrap'><table><thead><tr>"+head+"</tr></thead><tbody>"+body+"</tbody></table></div>";
+  view().innerHTML=`
+    <p class="muted" style="margin:0 0 16px">Finished captions and scripts, ready to copy and post. Study abroad on the left, travel and tours on the right.</p>
+    <div class="split">
+      ${col("study","Study Abroad","#1B47B0")}
+      ${col("travel","Travel &amp; Tours","#FF7A1A")}
+    </div>`;
 }
-function addBar(addKey, addLabel){
-  return `<div style="text-align:right;margin-bottom:8px"><button class="btn" onclick="openForm('${addKey}',null)">${esc(addLabel)}</button></div>`;
-}
-
-async function viewCRUD(key){
-  // ----- Combined page: CE Management -----
-  if(key==="ceTasks"){
-    const admin = session.role==="admin";
-    const [duties, tasks, comps] = await Promise.all([
-      fetchTable("weekly_duties"), fetchTable("ce_tasks"), fetchTable("competitor_watch")]);
-    let html=`<div class="panel"><div class="panel-head"><div><h3>CE Management</h3></div></div>`;
-    html+=`<div class="section-label">Fixed Weekly Duties${admin?"":" \u00B7 view only"}</div>`;
-    if(admin) html+=addBar("weeklyDuties","Add Duty");
-    html+=sectionTable("weeklyDuties", duties, {readOnly:!admin, parent:"ceTasks",
-      emptyMsg: admin?"No weekly duties yet. Use Add Duty.":"No weekly duties set yet."});
-    html+=`<div class="section-label" style="margin-top:24px">Daily Checklist</div>`;
-    html+=addBar("ceTasks","Add Task");
-    html+=sectionTable("ceTasks", tasks, {parent:"ceTasks", emptyMsg:"No checklist items yet. Use Add Task."});
-    html+=`<div class="section-label" style="margin-top:24px">Competitor Watch</div>`;
-    html+=addBar("competitors","Add Competitor");
-    html+=sectionTable("competitors", comps, {parent:"ceTasks", emptyMsg:"No competitor entries yet. Use Add Competitor."});
-    return html+`</div>`;
-  }
-
-  // ----- Combined page: Social Media -----
-  if(key==="social"){
-    const [posts, perf] = await Promise.all([fetchTable("social_media"), fetchTable("social_performance")]);
-    let html=`<div class="panel"><div class="panel-head"><div><h3>Social Media</h3></div></div>`;
-    html+=`<div class="section-label">Posts</div>`;
-    html+=addBar("social","Add Post");
-    html+=sectionTable("social", posts, {parent:"social", emptyMsg:"No posts yet. Use Add Post."});
-    html+=`<div class="section-label" style="margin-top:24px">Monthly Performance</div>`;
-    html+=addBar("socialPerf","Add Month");
-    html+=sectionTable("socialPerf", perf, {parent:"social", emptyMsg:"No monthly performance recorded yet. Use Add Month."});
-    return html+`</div>`;
-  }
-
-  const cfg=CRUD[key];
-  const data=await fetchTable(cfg.table);
-  const headHtml=`<div class="panel-head"><div><h3>${esc(cfg.title)}</h3></div>
-    <button class="btn" onclick="openForm('${key}',null)">${esc(cfg.addLabel)}</button></div>`;
-
-  // ----- Clients: Active / Completed split -----
-  if(key==="clients"){
-    const isCompleted=(c)=>String(c.status||"").toLowerCase()==="completed";
-    const isRejected=(c)=>String(c.status||"").toLowerCase()==="visa rejected";
-    const active=data.filter(c=>!isCompleted(c)&&!isRejected(c));
-    const rejected=data.filter(isRejected);
-    const done=data.filter(isCompleted);
-    return `<div class="panel">${headHtml}
-      <div class="section-label">Active Clients (${active.length})</div>
-      ${sectionTable(key,active,{parent:key,emptyMsg:"No active clients. Use \u201CAdd Client\u201D to begin."})}
-      <div class="section-label" style="margin-top:24px;border-left-color:var(--danger);color:var(--danger)">Visa Rejected \u2014 No Reapplication (${rejected.length})</div>
-      ${sectionTable(key,rejected,{parent:key,emptyMsg:"No rejected cases without reapplication."})}
-      <div class="section-label" style="margin-top:24px;border-left-color:var(--ok);color:var(--ok)">Completed (${done.length})</div>
-      ${sectionTable(key,done,{parent:key,emptyMsg:"No completed clients yet."})}</div>`;
-  }
-
-  // ----- Webinars: Upcoming / Past split -----
-  if(key==="webinars"){
-    const today=todayISO();
-    const upcoming=data.filter(w=>String(w.event_date||"")>=today);
-    const past=data.filter(w=>String(w.event_date||"")<today);
-    return `<div class="panel">
-      <div class="panel-head"><div><h3>Webinars</h3></div><button class="btn" onclick="openForm('webinars',null)">Add Webinar</button></div>
-      <div class="section-label">Upcoming (${upcoming.length})</div>
-      ${sectionTable("webinars",upcoming,{parent:"webinars",emptyMsg:"No upcoming webinars. Use Add Webinar."})}
-      <div class="section-label" style="margin-top:24px">Past (${past.length})</div>
-      ${sectionTable("webinars",past,{parent:"webinars",emptyMsg:"No past webinars yet."})}</div>`;
-  }
-}
-
-/* ---------- CE Reports (with export) ---------- */
-async function viewCEReports(){
-  const data=await fetchTable("ce_reports");
-  const dash="<span style='color:var(--muted)'>&mdash;</span>";
-  const body=data.length?data.map(it=>(
-    "<tr><td>"+esc(it.week)+"</td>"+
-    "<td>"+esc(it.total_leads||0)+"</td>"+
-    "<td>"+esc(it.leads_followed_up||0)+"</td>"+
-    "<td>"+esc(it.converted_leads||0)+"</td>"+
-    "<td>"+esc(it.pending_leads||0)+"</td>"+
-    "<td>"+esc(it.lost_leads||0)+"</td>"+
-    "<td>"+(it.client_responses?esc(it.client_responses):dash)+"</td>"+
-    "<td>"+(it.ce_opinion?esc(it.ce_opinion):dash)+"</td>"+
-    "<td>"+(it.feedback?esc(it.feedback):dash)+"</td>"+
-    "<td><div class='row-actions'>"+
-    "<button class='icon-btn' onclick=\"exportReport('"+it.id+"')\">Export</button>"+
-    "<button class='icon-btn' onclick=\"openForm('ceReports','"+it.id+"')\">Edit</button>"+
-    "<button class='icon-btn del' onclick=\"removeItem('ce_reports','"+it.id+"','ceReports')\">Delete</button>"+
-    "</div></td></tr>"
-  )).join(""):"<tr><td colspan='10' class='empty'>No reports yet. Use \u201CAdd Report\u201D to begin.</td></tr>";
-  return `<div class="panel"><div class="panel-head"><div><h3>CE Reports</h3><div class="panel-sub">Track follow-ups, what clients are saying, and why leads convert or not. Export copies a summary to your clipboard.</div></div>
-    <button class="btn" onclick="openForm('ceReports',null)">Add Report</button></div>
-    <div class="table-wrap"><table><thead><tr><th>Week</th><th>Total Leads</th><th>Followed Up</th><th>Converted</th><th>Pending</th><th>Lost</th><th>Client Responses</th><th>CE Opinion</th><th>Feedback</th><th style="text-align:right">Actions</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
-}
-async function exportReport(id){
-  const {data:r}=await sb.from("ce_reports").select("*").eq("id",id).single();
-  if(!r) return;
-  const leads=Number(r.total_leads)||0, conv=Number(r.converted_leads)||0, rate=leads?Math.round(conv/leads*100):0;
-  const text="EDUVOYAGE \u2014 CE WEEKLY REPORT\nWeek: "+(r.week||"-")+
-    "\nTotal Leads: "+leads+
-    "\nLeads Followed Up: "+(Number(r.leads_followed_up)||0)+
-    "\nConverted Leads: "+conv+
-    "\nPending / In Conversation: "+(Number(r.pending_leads)||0)+
-    "\nLost / No Response: "+(Number(r.lost_leads)||0)+
-    "\nConversion Rate: "+rate+"%"+
-    "\n\nClient Responses / Objections:\n"+(r.client_responses||"-")+
-    "\n\nCE's Opinion / Thoughts on Leads:\n"+(r.ce_opinion||"-")+
-    "\n\nFeedback / Notes:\n"+(r.feedback||"-")+
-    "\n\nPrepared by: "+session.name+"\nGenerated: "+nowStamp();
-  copyText(text);
-}
-function copyText(text){
-  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(()=>toast("Copied to clipboard")).catch(()=>fallbackCopy(text)); }
-  else fallbackCopy(text);
-}
-function fallbackCopy(text){ const ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy");toast("Copied to clipboard");}catch(e){alert(text);} document.body.removeChild(ta); }
+window.copyContent=function(cid,btn){
+  const c=state.content.find(x=>x.id===cid); if(!c) return;
+  const text=(c.title?c.title+"\n\n":"")+c.body;
+  navigator.clipboard.writeText(text).then(()=>{ const o=btn.textContent; btn.textContent="Copied ✓"; setTimeout(()=>btn.textContent=o,1400); })
+   .catch(()=>{ const ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy");}catch(e){} ta.remove(); btn.textContent="Copied ✓"; setTimeout(()=>btn.textContent="Copy",1400); });
+};
+window.contentForm=function(cid){
+  const c=cid?state.content.find(x=>x.id===cid):{area:"study",title:"",body:"",week:"This week"};
+  openModal(cid?"Edit content":"Add content",`
+    <div class="grid2">
+      <div class="field"><label>Where it goes</label><select id="c_area"><option value="study" ${c.area==="study"?"selected":""}>Study Abroad</option><option value="travel" ${c.area==="travel"?"selected":""}>Travel & Tours</option></select></div>
+      <div class="field"><label>Week</label><input id="c_week" value="${esc(c.week)}" placeholder="e.g. Week of 1 Sept"></div>
+    </div>
+    <div class="field"><label>Title / hook</label><input id="c_title" value="${esc(c.title)}" placeholder="Short label so you know what it is"></div>
+    <div class="field"><label>Caption or script</label><textarea id="c_body" style="min-height:180px" placeholder="Paste the finished content here...">${esc(c.body)}</textarea></div>
+  `, async ()=>{
+    const body=document.getElementById("c_body").value.trim(); if(!body){alert("Add the content text.");return;}
+    const data={area:document.getElementById("c_area").value,week:document.getElementById("c_week").value.trim(),title:document.getElementById("c_title").value.trim(),body};
+    if(cid){Object.assign(c,data);log(`Edited ${data.area==="study"?"study abroad":"travel"} content`);}
+    else{state.content.push(Object.assign({id:id()},data));log(`Added ${data.area==="study"?"study abroad":"travel"} content`);}
+    await save(); closeModal(); renderSocial();
+  });
+};
+window.delContent=function(cid){ confirmModal("Delete this content?", async ()=>{ state.content=state.content.filter(x=>x.id!==cid); await save(); closeModal(); renderSocial(); }); };
 
 /* ---------- Services & Info ---------- */
-async function viewServices(){
-  const all=await fetchTable("service_info");
-  const studyRows=all.filter(r=>String(r.type||"")==="Study Abroad");
-  const toursRows=all.filter(r=>String(r.type||"")==="Travel & Tours");
-  function serviceTable(rows, editKey){
-    if(!rows.length) return "<tr><td colspan='5' class='empty'>No entries yet. Use the Add button to get started.</td></tr>";
-    return rows.map(r=>{
-      const req=String(r.requirements||"");
-      return "<tr>"+
-        "<td style='font-weight:600;white-space:nowrap;vertical-align:top'>"+esc(r.country||"")+"</td>"+
-        "<td style='vertical-align:top;white-space:nowrap'>"+esc(r.service_name||"")+"</td>"+
-        "<td style='font-size:13px;white-space:pre-wrap;line-height:1.7'>"+esc(req)+"</td>"+
-        "<td style='vertical-align:top;font-size:12px;color:var(--muted)'>"+esc(r.notes||"")+"</td>"+
-        "<td style='vertical-align:top'><div class='row-actions'>"+
-          "<button class='icon-btn' style='background:var(--gold);color:#fff;border-color:var(--gold)' onclick=\"copyToClip("+JSON.stringify(req)+")\">Copy</button>"+
-          "<button class='icon-btn' onclick=\"openForm('"+editKey+"','"+r.id+"')\">Edit</button>"+
-          "<button class='icon-btn del' onclick=\"removeItem('service_info','"+r.id+"','services')\">Delete</button>"+
-        "</div></td></tr>";
-    }).join("");
-  }
-  return `
-    <div class="panel"><div class="panel-head"><div><h3>Study Abroad — Countries &amp; Requirements</h3><div class="panel-sub">Tap <b>Copy</b> to copy requirements straight to clipboard for WhatsApp or email.</div></div><button class="btn" onclick="openForm('serviceStudy',null)">Add Country / Service</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Country</th><th>Service / Visa</th><th>Requirements</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
-      <tbody>${serviceTable(studyRows,"serviceStudy")}</tbody></table></div></div>
-    <div class="panel"><div class="panel-head"><div><h3>Travel &amp; Tours — Destinations &amp; Packages</h3><div class="panel-sub">Tap <b>Copy</b> to copy package details or requirements instantly.</div></div><button class="btn" onclick="openForm('serviceTours',null)">Add Destination</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Destination</th><th>Package</th><th>Details</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
-      <tbody>${serviceTable(toursRows,"serviceTours")}</tbody></table></div></div>`;
-}
-function streamRows(data, stream, editKey){
-  const rows=data.filter(r=>String(r.stream||"")=== stream);
-  if(!rows.length) return "<tr><td colspan='6' class='empty'>No entries yet.</td></tr>";
-  return rows.map(r=>{
-    const profit=Number(r.amount||0)-Number(r.cost||0);
-    return "<tr><td style='white-space:nowrap'>"+esc(r.date||"")+"</td><td>"+esc(r.client||"")+"</td><td>"+esc(r.service||"")+"</td>"+
-      "<td style='color:var(--gold-soft)'>"+naira(r.amount)+"</td>"+
-      (stream!=="Study Abroad"?"<td>"+naira(r.cost)+"</td><td style='font-weight:600;color:"+(profit>=0?"var(--ok)":"var(--danger)")+"'>"+naira(profit)+"</td>":"<td colspan='2'></td>")+
-      "<td><div class='row-actions'><button class='icon-btn' onclick=\"openForm('"+editKey+"','"+r.id+"')\">Edit</button>"+
-      "<button class='icon-btn del' onclick=\"removeItem('revenue','"+r.id+"','finances')\">Delete</button></div></td></tr>";
-  }).join("");
-}
-async function viewFinances(){
-  const now=new Date();
-  const monthStr=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
-  const monthLabel=now.toLocaleString("en-GB",{month:"long",year:"numeric"});
-  const [revenue,expenses,clients]=await Promise.all([fetchTable("revenue"),fetchTable("expenses"),fetchTable("clients")]);
-  const outstanding=clients.reduce((s,c)=>s+(Number(c.balance)||0),0);
-
-  // Per-stream helpers
-  function streamStats(stream, month){
-    const rows=revenue.filter(r=>String(r.stream||"")===stream&&(month?String(r.date||"").startsWith(month):true));
-    const rev=rows.reduce((s,r)=>s+(Number(r.amount)||0),0);
-    const cost=rows.reduce((s,r)=>s+(Number(r.cost)||0),0);
-    return {rev,cost,profit:rev-cost};
-  }
-  const SA=streamStats("Study Abroad",monthStr);
-  const TT=streamStats("Travel & Tours",monthStr);
-  const FL=streamStats("Flights",monthStr);
-  const mExp=expenses.filter(e=>String(e.date||"").startsWith(monthStr)).reduce((s,e)=>s+(Number(e.amount)||0),0);
-
-  // Monthly breakdown per stream
-  const months={};
-  revenue.forEach(r=>{
-    const m=String(r.date||"").slice(0,7); const st=String(r.stream||"Other");
-    if(!m) return;
-    if(!months[m]) months[m]={};
-    if(!months[m][st]) months[m][st]={rev:0,cost:0};
-    months[m][st].rev+=Number(r.amount)||0; months[m][st].cost+=Number(r.cost)||0;
-  });
-  expenses.forEach(e=>{
-    const m=String(e.date||"").slice(0,7);
-    if(!m) return;
-    if(!months[m]) months[m]={};
-    if(!months[m]["_exp"]) months[m]["_exp"]={rev:0,cost:0};
-    months[m]["_exp"].rev+=Number(e.amount)||0;
-  });
-  const sortedMonths=Object.keys(months).sort().reverse();
-  const breakdownRows=sortedMonths.length?sortedMonths.map(m=>{
-    const d=months[m];
-    const sa=(d["Study Abroad"]||{rev:0,cost:0}); const tt=(d["Travel & Tours"]||{rev:0,cost:0}); const fl=(d["Flights"]||{rev:0,cost:0});
-    const exp=(d["_exp"]||{rev:0}).rev;
-    const label=new Date(m+"-01").toLocaleString("en-GB",{month:"long",year:"numeric"});
-    const totalProfit=(sa.rev-sa.cost)+(tt.rev-tt.cost)+(fl.rev-fl.cost)-exp;
-    return "<tr><td style='font-weight:600'>"+esc(label)+"</td>"+
-      "<td style='color:var(--gold-soft)'>"+naira(sa.rev)+"</td>"+
-      "<td>"+naira(tt.rev)+" / <span style='color:var(--danger)'>"+naira(tt.cost)+"</span> = <b>"+naira(tt.rev-tt.cost)+"</b></td>"+
-      "<td>"+naira(fl.rev)+" / <span style='color:var(--danger)'>"+naira(fl.cost)+"</span> = <b>"+naira(fl.rev-fl.cost)+"</b></td>"+
-      "<td style='color:var(--muted)'>"+naira(exp)+"</td>"+
-      "<td style='font-weight:700;color:"+(totalProfit>=0?"var(--ok)":"var(--danger)")+"'>"+naira(totalProfit)+"</td></tr>";
-  }).join(""):"<tr><td colspan='6' class='empty'>No data yet.</td></tr>";
-
-  const expRows=expenses.length?expenses.map(e=>"<tr><td>"+esc(e.date||"")+"</td><td>"+esc(e.category||"")+"</td><td>"+esc(e.description||"")+"</td><td>"+naira(e.amount)+"</td><td><div class='row-actions'><button class='icon-btn' onclick=\"openForm('expenses','"+e.id+"')\">Edit</button><button class='icon-btn del' onclick=\"removeItem('expenses','"+e.id+"','finances')\">Delete</button></div></td></tr>").join(""):"<tr><td colspan='5' class='empty'>No expenses recorded.</td></tr>";
-
-  return `
-    <div class="section-label">${monthLabel} — This Month</div>
-    <div class="stats" style="grid-template-columns:repeat(4,1fr)">
-      <div class="stat"><div class="label">Study Abroad</div><div class="value gold">${naira(SA.rev)}</div><div style="font-size:11px;color:var(--muted);margin-top:4px">Processing fees</div></div>
-      <div class="stat"><div class="label">Travel & Tours</div><div class="value gold">${naira(TT.rev)}</div><div style="font-size:11px;color:var(--muted);margin-top:4px">Cost ${naira(TT.cost)} &bull; Profit <b style="color:var(--ok)">${naira(TT.profit)}</b></div></div>
-      <div class="stat"><div class="label">Flights</div><div class="value gold">${naira(FL.rev)}</div><div style="font-size:11px;color:var(--muted);margin-top:4px">Cost ${naira(FL.cost)} &bull; Profit <b style="color:var(--ok)">${naira(FL.profit)}</b></div></div>
-      <div class="stat"><div class="label">Outstanding (Clients)</div><div class="value">${naira(outstanding)}</div></div>
+function renderServices(){
+  const svc=[
+    {c:"Canada",g:"₦200,000",f:"₦500,000",note:"Long journey — 8 months or more. Guided review covers the whole way."},
+    {c:"UK",g:"₦200,000",f:"₦500,000",note:"Guided review or full handling."},
+    {c:"Schengen / Europe",g:"₦150,000",f:"₦450,000",note:"Tourist and visit visas."},
+  ];
+  view().innerHTML=`
+    <div class="card pad" style="margin-bottom:20px">
+      <div class="section-title"><span class="tick"></span>Consultation</div>
+      <p style="margin:8px 0 0">A one-off paid session — <b>₦50,000</b> for 45 minutes. This is the fallback offer if someone hesitates on a full service. Never discount the main fees; point them here instead.</p>
     </div>
-
-    <div class="section-label" style="margin-top:8px">Monthly Breakdown</div>
-    <div class="panel" style="margin-bottom:20px">
-      <div class="table-wrap"><table><thead><tr><th>Month</th><th>Study Abroad</th><th>Travel &amp; Tours</th><th>Flights</th><th>Expenses</th><th>Net Profit</th></tr></thead>
-      <tbody>${breakdownRows}</tbody></table></div>
+    <div class="card">
+      <div class="pad" style="padding-bottom:6px"><div class="section-title"><span class="tick"></span>Study abroad & visa services</div></div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Route</th><th>Guided review (DIY)</th><th>Full service</th><th>Notes</th></tr></thead>
+        <tbody>${svc.map(s=>`<tr><td class="client-name">${s.c}</td><td>${s.g}</td><td>${s.f}</td><td class="muted">${s.note}</td></tr>`).join("")}</tbody>
+      </table></div>
     </div>
-
-    <div class="panel"><div class="panel-head"><div><h3>Eduvoyage Ltd — Study Abroad</h3><div class="panel-sub">Processing fees &amp; school applications</div></div><button class="btn" onclick="openForm('revenueStudy',null)">Add Income</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Client</th><th>Service</th><th>Amount Received</th><th colspan="2"></th><th style="text-align:right">Actions</th></tr></thead>
-      <tbody>${streamRows(revenue,"Study Abroad","revenueStudy")}</tbody></table></div></div>
-
-    <div class="panel"><div class="panel-head"><div><h3>Eduvoyage Travel &amp; Tours</h3><div class="panel-sub">Holiday packages &amp; tours</div></div><button class="btn" onclick="openForm('revenueTours',null)">Add Package</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Client</th><th>Package</th><th>Charged</th><th>Spent</th><th>Profit</th><th style="text-align:right">Actions</th></tr></thead>
-      <tbody>${streamRows(revenue,"Travel & Tours","revenueTours")}</tbody></table></div></div>
-
-    <div class="panel"><div class="panel-head"><div><h3>Flight Bookings</h3><div class="panel-sub">Ticket revenue &amp; profit</div></div><button class="btn" onclick="openForm('revenueFlights',null)">Add Flight</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Client</th><th>Route</th><th>Charged</th><th>Ticket Cost</th><th>Profit</th><th style="text-align:right">Actions</th></tr></thead>
-      <tbody>${streamRows(revenue,"Flights","revenueFlights")}</tbody></table></div></div>
-
-    <div class="panel"><div class="panel-head"><div><h3>Business Expenses</h3><div class="panel-sub">Running costs &amp; overheads</div></div><button class="btn" onclick="openForm('expenses',null)">Add Expense</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th style="text-align:right">Actions</th></tr></thead>
-      <tbody>${expRows}</tbody></table></div></div>`;
-}
-
-/* Finance form opener — sets stream automatically */
-async function openFinanceForm(streamKey, id){
-  const streamMap={study:"Study Abroad",tours:"Travel & Tours",flights:"Flights"};
-  const stream=streamMap[streamKey]||"Study Abroad";
-  const fldDefs={
-    study:[{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Service / Description",type:"text"},{k:"amount",label:"Amount Received (\u20A6)",type:"number",req:true}],
-    tours:[{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Package Description",type:"text"},{k:"amount",label:"Package Price Charged (\u20A6)",type:"number",req:true},{k:"cost",label:"Total Amount Spent on Package (\u20A6)",type:"number"}],
-    flights:[{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Route / Destination",type:"text"},{k:"amount",label:"Amount Charged (\u20A6)",type:"number",req:true},{k:"cost",label:"Ticket Cost (\u20A6)",type:"number"}]
-  };
-  const titles={study:"Study Abroad Income",tours:"Travel & Tours Package",flights:"Flight Booking"};
-  let existing=null;
-  if(id){ const {data}=await sb.from("revenue").select("*").eq("id",id).single(); existing=data; }
-  const flds=fldDefs[streamKey]||fldDefs.study;
-  let html="";
-  flds.forEach(f=>{
-    let val=existing?(existing[f.k]==null?"":existing[f.k]):(f.type==="date"?todayISO():"");
-    html+="<div class='field'><label>"+esc(f.label)+(f.req?" *":"")+"</label>";
-    if(f.type==="select"){
-      html+="<select id='f_"+f.k+"'>";
-      f.opts.forEach(o=>{ const ov=typeof o==="object"?o.value:o, ol=typeof o==="object"?o.label:o; html+="<option value='"+esc(ov)+"'"+(String(val)===String(ov)?" selected":"")+">"+esc(ol)+"</option>"; });
-      html+="</select>";
-    } else if(f.type==="textarea"){ html+="<textarea id='f_"+f.k+"' rows='3'>"+esc(val)+"</textarea>"; }
-    else { html+="<input id='f_"+f.k+"' type='"+f.type+"' value='"+esc(val)+"'>"; }
-    html+="</div>";
-  });
-  document.getElementById("modalTitle").textContent=(id?"Edit ":"Add ")+titles[streamKey];
-  document.getElementById("modalBody").innerHTML=html;
-  document.getElementById("modalSave").onclick=saveForm;
-  document.getElementById("overlay").classList.add("show");
-  modalCtx={key:"_finance_"+streamKey,table:"revenue",id:id||null,parentView:"finances",stream};
-}
-
-/* ---------- Personal Workspace (admin) ---------- */
-async function viewPersonal(){
-  const [todos,plans,waka]=await Promise.all([fetchTable("todos"),fetchTable("personal_eduvoyage"),fetchTable("personal_waka")]);
-  const todoRows=todos.length?todos.map(t=>(
-    "<tr><td>"+esc(t.task)+"</td><td>"+prioPill(t.priority)+"</td><td>"+pill(t.status)+"</td>"+
-    "<td><div class='row-actions'><button class='icon-btn' onclick=\"openForm('todos','"+t.id+"')\">Edit</button>"+
-    "<button class='icon-btn del' onclick=\"removeItem('todos','"+t.id+"','personal')\">Delete</button></div></td></tr>"
-  )).join(""):"<tr><td colspan='4' class='empty'>No to-dos yet. Use Add To-Do.</td></tr>";
-  const planRows=plans.length?plans.map(n=>(
-    "<tr><td style='white-space:nowrap;color:var(--muted)'>"+esc(n.note_date)+"</td><td>"+esc(n.note)+"</td>"+
-    "<td><div class='row-actions'><button class='icon-btn' onclick=\"openForm('personal_eduvoyage','"+n.id+"')\">Edit</button>"+
-    "<button class='icon-btn del' onclick=\"removeItem('personal_eduvoyage','"+n.id+"','personal')\">Delete</button></div></td></tr>"
-  )).join(""):"<tr><td colspan='3' class='empty'>No plans yet. Use Add Plan.</td></tr>";
-  const wakaRows=waka.length?waka.map(w=>(
-    "<tr><td style='white-space:nowrap;color:var(--muted)'>"+esc(w.content_date)+"</td><td>"+pill(w.content_type)+"</td><td>"+esc(w.content)+"</td>"+
-    "<td><div class='row-actions'><button class='icon-btn' onclick=\"openForm('personal_waka','"+w.id+"')\">Edit</button>"+
-    "<button class='icon-btn del' onclick=\"removeItem('personal_waka','"+w.id+"','personal')\">Delete</button></div></td></tr>"
-  )).join(""):"<tr><td colspan='4' class='empty'>No content yet.</td></tr>";
-  return `
-    <div class="panel"><div class="panel-head"><div><h3>To-Dos</h3><div class="panel-sub">Current tasks &mdash; what needs to get done now.</div></div><button class="btn" onclick="openForm('todos',null)">Add To-Do</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Task</th><th>Priority</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead><tbody>${todoRows}</tbody></table></div></div>
-    <div class="panel"><div class="panel-head"><div><h3>Future Plans</h3><div class="panel-sub">Business goals, ideas and things to plan for later.</div></div><button class="btn" onclick="openForm('personal_eduvoyage',null)">Add Plan</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Plan / Goal / Idea</th><th style="text-align:right">Actions</th></tr></thead><tbody>${planRows}</tbody></table></div></div>
-    <div class="panel"><div class="panel-head"><div><h3>WakaWithAmi</h3><div class="panel-sub">Personal travel brand &mdash; scripts, ideas, drafts.</div></div><button class="btn" onclick="openForm('personal_waka',null)">Add Content</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Content</th><th style="text-align:right">Actions</th></tr></thead><tbody>${wakaRows}</tbody></table></div></div>`;
-}
-
-/* ---------- Activity Log (admin) ---------- */
-async function viewActivity(){
-  let list=await fetchTable("activity_log");
-  if(session.role!=="admin") list=list.filter(a=>String(a.actor_role||"")!=="admin");
-  const rows=list.length?list.map(a=>("<tr><td style='white-space:nowrap;color:var(--muted)'>"+esc(nowStamp(a.timestamp))+"</td><td>"+esc(a.user_name)+"</td><td>"+esc(a.action)+"</td><td style='color:var(--muted)'>"+esc(a.module)+(a.details?" \u2014 "+esc(a.details):"")+"</td></tr>")).join(""):"<tr><td colspan='4' class='empty'>No activity recorded.</td></tr>";
-  const sub=session.role==="admin"?`Immutable record (${list.length} entries).`:`Team activity (${list.length} entries).`;
-  return `<div class="panel"><div class="panel-head"><div><h3>Activity Log</h3><div class="panel-sub">${sub}</div></div></div>
-    <div class="table-wrap"><table><thead><tr><th>When</th><th>User</th><th>Action</th><th>Details</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
-}
-
-/* ---------- Settings ---------- */
-async function viewSettings(){
-  const admin=session.role==="admin";
-  const roleLong = "Administrator";
-  return `
-    <div class="grid2">
-      <div class="panel"><div class="panel-head"><h3>Workspace Info</h3></div>
-        <div class="kv"><span class="k">Current User</span><span>${esc(session.name)}</span></div>
-        <div class="kv"><span class="k">Role</span><span>${roleLong}</span></div>
-        <div class="kv"><span class="k">Account</span><span>${esc(session.email)}</span></div>
-        <div class="kv"><span class="k">Storage</span><span>Supabase Cloud (live sync)</span></div>
-      </div>
-      <div class="panel"><div class="panel-head"><h3>Change Password</h3></div>
-        <div class="note">Change your workspace password. You can also reset it via Supabase if needed.</div>
-        <div class="field"><label>New Password</label><input id="pw1" type="password" autocomplete="new-password" placeholder="At least 6 characters"></div>
-        <div class="field"><label>Confirm New Password</label><input id="pw2" type="password" autocomplete="new-password" placeholder="Repeat new password"></div>
-        <div id="pwMsg" style="font-size:13px;margin-bottom:8px;color:var(--muted)"></div>
-        <button class="btn" onclick="changePassword()">Update Password</button>
-      </div>
-      <div class="panel"><div class="panel-head"><h3>Data Management</h3></div>
-        <div class="note">Your data lives in the Supabase cloud and syncs automatically across all devices. No manual restore is needed.</div>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <button class="btn btn-ghost" onclick="downloadBackup()">Download Backup (JSON)</button>
-          ${admin?'<button class="btn btn-ghost" onclick="exportCSV()">Export All Data (CSV)</button>':''}
-          <button class="btn btn-ghost" disabled title="Not needed with cloud sync">Upload &amp; Restore (disabled)</button>
-          ${admin?'<button class="btn btn-danger" onclick="clearAll()">Clear All Data (cloud)</button>':''}
-        </div>
-      </div>
+    <div class="card pad" style="margin-top:20px">
+      <div class="section-title"><span class="tick"></span>Guided review — what it means</div>
+      <p style="margin:8px 0 0">The client does their own application; we make sure it doesn't get refused. Every document is checked personally before submission — what's weak, what's missing, what will get them rejected. Runs from application stage right through to visa stage.</p>
+    </div>
+    <div class="card pad" style="margin-top:20px">
+      <div class="section-title"><span class="tick"></span>Payment policy</div>
+      <p style="margin:8px 0 0">50% deposit before any service begins. Balance settled before delivery. Hold the line on fees — the consultation is the only lower entry point.</p>
     </div>`;
 }
-async function changePassword(){
-  const p1=document.getElementById("pw1").value, p2=document.getElementById("pw2").value;
-  const msg=document.getElementById("pwMsg");
-  if(!p1||p1.length<6){ msg.style.color="var(--danger)"; msg.textContent="Password must be at least 6 characters."; return; }
-  if(p1!==p2){ msg.style.color="var(--danger)"; msg.textContent="The two passwords do not match."; return; }
-  msg.style.color="var(--muted)"; msg.textContent="Updating\u2026";
-  try{
-    const {error}=await sb.auth.updateUser({password:p1});
-    if(error){ msg.style.color="var(--danger)"; msg.textContent="Error: "+error.message; return; }
-    await logActivity("change password","auth",session.name+" updated their password");
-    msg.style.color="var(--ok)"; msg.textContent="Password updated. Use it next time you sign in.";
-    document.getElementById("pw1").value=""; document.getElementById("pw2").value="";
-    toast("Password updated");
-  }catch(e){ msg.style.color="var(--danger)"; msg.textContent="Error: "+e.message; }
-}
 
-/* ---------- modal / form ---------- */
-let modalCtx=null;
-function fieldDefs(key){
-  if(CRUD[key]) return CRUD[key].fields;
-  if(key==="_finance_study") return [{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Service / Description",type:"text"},{k:"amount",label:"Amount Received (\u20A6)",type:"number",req:true}];
-  if(key==="_finance_tours") return [{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Package Description",type:"text"},{k:"amount",label:"Package Price Charged (\u20A6)",type:"number",req:true},{k:"cost",label:"Total Amount Spent on Package (\u20A6)",type:"number"}];
-  if(key==="_finance_flights") return [{k:"date",label:"Date",type:"date"},{k:"client",label:"Client Name",type:"text",req:true},{k:"service",label:"Route / Destination",type:"text"},{k:"amount",label:"Amount Charged (\u20A6)",type:"number",req:true},{k:"cost",label:"Ticket Cost (\u20A6)",type:"number"}];
-  if(key==="revenue") return [{k:"date",label:"Date",type:"date"},{k:"client",label:"Client",type:"text",req:true},{k:"service",label:"Service",type:"text"},{k:"amount",label:"Amount (\u20A6)",type:"number"}];
-  if(key==="expenses") return [{k:"date",label:"Date",type:"date"},{k:"category",label:"Category",type:"text",req:true},{k:"description",label:"Description",type:"text"},{k:"amount",label:"Amount (\u20A6)",type:"number"}];
-  if(key==="personal_eduvoyage") return [{k:"note_date",label:"Date",type:"date"},{k:"note",label:"Note",type:"textarea",req:true}];
-  if(key==="personal_waka") return [{k:"content_date",label:"Date",type:"date"},{k:"content_type",label:"Type",type:"select",opts:["Script","Idea","Draft"]},{k:"content",label:"Content",type:"textarea",req:true}];
-  return [];
+/* ---------- Finances (code-locked) ---------- */
+function renderFinances(){
+  if(!financeUnlocked){ return gate("Finances","This page is private. Enter the finance code to view it.", ()=>{financeUnlocked=true;renderFinances();}, FINANCE_CODE); }
+  topBtn("Add entry", ()=>financeForm());
+  let inSum=0,outSum=0;
+  state.finances.forEach(f=> f.type==="in"?inSum+=Number(f.amount):outSum+=Number(f.amount));
+  const rows=[...state.finances].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(f=>`
+    <tr>
+      <td>${fmtDate(f.date)}</td>
+      <td class="client-name">${esc(f.desc)}</td>
+      <td>${f.type==="in"?'<span class="pill green">Money in</span>':'<span class="pill red">Money out</span>'}</td>
+      <td style="text-align:right;font-weight:700;color:${f.type==="in"?"var(--green)":"var(--red)"}">${f.type==="in"?"+":"−"}${naira(f.amount)}</td>
+      <td style="text-align:right"><button class="icon-btn" onclick="financeForm('${f.id}')">✎</button><button class="icon-btn" onclick="delFinance('${f.id}')">🗑</button></td>
+    </tr>`).join("");
+  view().innerHTML=`
+    <div class="kpis">
+      <div class="kpi"><div class="n" style="color:var(--green)">${naira(inSum)}</div><div class="l">Total in</div></div>
+      <div class="kpi"><div class="n" style="color:var(--red)">${naira(outSum)}</div><div class="l">Total out</div></div>
+      <div class="kpi accent"><div class="n">${naira(inSum-outSum)}</div><div class="l">Balance</div></div>
+    </div>
+    <div class="card">
+      <div class="pad" style="padding-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+        <div class="section-title"><span class="tick"></span>Ledger</div>
+        <button class="btn sm ghost" onclick="financeUnlocked=false;renderFinances()">Lock again</button>
+      </div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Date</th><th>Description</th><th>Type</th><th style="text-align:right">Amount</th><th></th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="5" class="empty"><div class="big">No entries yet</div>Add money in or out to start the ledger.</td></tr>`}</tbody>
+      </table></div>
+    </div>`;
 }
-function tableFor(key){ return CRUD[key]?CRUD[key].table:key; }
-function parentViewFor(key){
-  if(key==="revenue"||key==="expenses"||key.startsWith("_finance_")||key==="revenueStudy"||key==="revenueTours"||key==="revenueFlights") return "finances";
-  if(key==="personal_eduvoyage"||key==="personal_waka") return "personal";
-  if(key==="weeklyDuties"||key==="competitors") return "ceTasks";
-  if(key==="socialPerf") return "social";
-  if(key==="serviceStudy"||key==="serviceTours") return "services";
-  return key;
-}
-function copyToClip(text){
-  if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(()=>toast("Copied to clipboard")).catch(()=>fallbackCopy(text));
-  } else { fallbackCopy(text); }
-}
-function fallbackCopy(text){
-  const el=document.createElement("textarea"); el.value=text;
-  el.style.position="fixed"; el.style.opacity="0";
-  document.body.appendChild(el); el.select();
-  try{ document.execCommand("copy"); toast("Copied"); }catch(e){ toast("Long-press to copy manually"); }
-  document.body.removeChild(el);
-}
-function moduleLabel(key){ return CRUD[key]?CRUD[key].title:({revenue:"Revenue",expenses:"Expense",personal_eduvoyage:"Note",personal_waka:"WakaWithAmi"}[key]||key); }
-function labelOf(obj){ return obj.client_name||obj.title||obj.task||obj.duty||obj.competitor||obj.month||obj.client||obj.week||obj.country||obj.note||obj.content||obj.topic||obj.service_name||"record"; }
-
-async function openForm(key,id){
-  const fields=fieldDefs(key), table=tableFor(key);
-  let existing=null;
-  if(id){ const {data}=await sb.from(table).select("*").eq("id",id).single(); existing=data; }
-  modalCtx={key,table,id:id||null,parentView:parentViewFor(key)};
-  document.getElementById("modalTitle").textContent=(id?"Edit ":"Add ")+(CRUD[key]?CRUD[key].title.replace(/s$/,""):moduleLabel(key));
-  let html="";
-  let autoInvoice="";
-  if(key==="clients" && !id){
-    try{
-      const ex=await fetchTable("clients"); let max=0;
-      ex.forEach(c=>{ const n=parseInt(String(c.invoice_no||"").replace(/[^0-9]/g,""),10); if(!isNaN(n)&&n>max) max=n; });
-      autoInvoice="#"+String(max+1).padStart(3,"0");
-    }catch(e){ autoInvoice=""; }
-  }
-  fields.forEach(f=>{
-    let val = existing ? (existing[f.k]==null?"":existing[f.k]) : (f.k==="invoice_no"?autoInvoice : (f.type==="date"?todayISO():""));
-    html+="<div class='field'><label>"+esc(f.label)+(f.req?" *":"")+"</label>";
-    if(f.type==="select"){
-      html+="<select id='f_"+f.k+"'>";
-      f.opts.forEach(o=>{ const ov=typeof o==="object"?o.value:o, ol=typeof o==="object"?o.label:o; html+="<option value='"+esc(ov)+"'"+(String(val)===String(ov)?" selected":"")+">"+esc(ol)+"</option>"; });
-      html+="</select>";
-    } else if(f.type==="textarea"){ html+="<textarea id='f_"+f.k+"' rows='3'>"+esc(val)+"</textarea>"; }
-    else { html+="<input id='f_"+f.k+"' type='"+f.type+"' value='"+esc(val)+"'>"; }
-    html+="</div>";
+window.financeForm=function(fid){
+  const f=fid?state.finances.find(x=>x.id===fid):{date:todayStr(),desc:"",type:"in",amount:""};
+  openModal(fid?"Edit entry":"Add entry",`
+    <div class="grid2">
+      <div class="field"><label>Date</label><input id="m_date" type="date" value="${esc(f.date)}"></div>
+      <div class="field"><label>Type</label><select id="m_type"><option value="in" ${f.type==="in"?"selected":""}>Money in</option><option value="out" ${f.type==="out"?"selected":""}>Money out</option></select></div>
+    </div>
+    <div class="field"><label>Description</label><input id="m_desc" value="${esc(f.desc)}" placeholder="e.g. Deposit — Temitope"></div>
+    <div class="field"><label>Amount (₦)</label><input id="m_amount" type="number" value="${esc(f.amount)}" placeholder="0"></div>
+  `, async ()=>{
+    const desc=document.getElementById("m_desc").value.trim(); const amount=Number(document.getElementById("m_amount").value);
+    if(!desc||!amount){alert("Description and amount are needed.");return;}
+    const data={date:document.getElementById("m_date").value,type:document.getElementById("m_type").value,desc,amount};
+    if(fid)Object.assign(f,data);else state.finances.push(Object.assign({id:id()},data));
+    log(`Finance: ${data.type==="in"?"in":"out"} ${naira(amount)} — ${desc}`);
+    await save(); closeModal(); renderFinances();
   });
-  document.getElementById("modalBody").innerHTML=html;
-  document.getElementById("modalSave").onclick=saveForm;
-  document.getElementById("overlay").classList.add("show");
-}
-function closeModal(){ document.getElementById("overlay").classList.remove("show"); modalCtx=null; }
+};
+window.delFinance=function(fid){ confirmModal("Delete this entry?", async ()=>{ state.finances=state.finances.filter(x=>x.id!==fid); await save(); closeModal(); renderFinances(); }); };
 
-async function saveForm(){
-  const {key,table,id,parentView}=modalCtx;
-  const fields=fieldDefs(key), obj={};
-  for(const f of fields){
-    const el=document.getElementById("f_"+f.k); let v=el.value.trim();
-    if(f.req&&!v){ el.focus(); el.style.borderColor="var(--danger)"; return; }
-    if(f.type==="number") v = v===""?null:Number(v);
-    if((f.type==="date"||f.type==="time")&&v==="") v=null;
-    obj[f.k]=v;
-  }
-  // Auto-inject stream for finance stream forms
-  if(modalCtx.stream) obj.stream=modalCtx.stream;
-  if(key==="revenueStudy") obj.stream="Study Abroad";
-  else if(key==="revenueTours") obj.stream="Travel & Tours";
-  else if(key==="revenueFlights") obj.stream="Flights";
-  if(key==="serviceStudy") obj.type="Study Abroad";
-  else if(key==="serviceTours") obj.type="Travel & Tours";
-  if(!id && HAS_CREATED_BY.has(table)) obj.created_by=session.role;
-  if(id && HAS_UPDATED_AT.has(table)) obj.updated_at=new Date().toISOString();
-  const saveBtn=document.getElementById("modalSave"); saveBtn.disabled=true;
-  let res, recId=id;
-  if(id) res=await sb.from(table).update(obj).eq("id",id);
-  else { res=await sb.from(table).insert(obj).select(); if(res.data&&res.data[0]) recId=res.data[0].id; }
-  saveBtn.disabled=false;
-  if(res.error){ toast("Error: "+res.error.message); return; }
-  await logActivity(id?"edit":"add", moduleLabel(key), labelOf(obj), recId);
-  toast(id?"Updated":"Added"); closeModal(); show(parentView);
+/* ---------- Personal Workspace ---------- */
+function renderPersonal(){
+  view().innerHTML=`
+    <div class="card pad" style="margin-bottom:20px">
+      <div class="row-between" style="margin-bottom:8px">
+        <div class="section-title"><span class="tick"></span>To-dos</div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:8px">
+        <input id="todoInput" placeholder="Add something to do..." style="flex:1;padding:11px 12px;border:1.5px solid var(--line-strong);border-radius:10px;font-size:14.5px;background:#FBFCFF">
+        <button class="btn" onclick="addTodo()">Add</button>
+      </div>
+      <div id="todoList">${renderTodoList()}</div>
+    </div>
+    <div class="card pad">
+      <div class="section-title"><span class="tick"></span>Notes</div>
+      <p class="muted" style="margin:6px 0 12px">Anything you like — ideas, reminders, drafts. Saves as you type.</p>
+      <textarea id="notesBox" style="width:100%;min-height:260px;border:1.5px solid var(--line-strong);border-radius:12px;padding:14px;font-size:14.5px;line-height:1.6;background:#FBFCFF;resize:vertical" placeholder="Start writing...">${esc(state.notes)}</textarea>
+    </div>`;
+  const box=document.getElementById("notesBox");
+  let tmr; box.addEventListener("input",()=>{ clearTimeout(tmr); tmr=setTimeout(async ()=>{ state.notes=box.value; await save(); },500); });
+  document.getElementById("todoInput").addEventListener("keydown",e=>{ if(e.key==="Enter") addTodo(); });
 }
+function renderTodoList(){
+  if(!state.todos.length) return `<p class="muted">Nothing on the list. Add your first task above.</p>`;
+  return state.todos.map(t=>`
+    <div class="todo ${t.done?"done":""}">
+      <input type="checkbox" ${t.done?"checked":""} onchange="toggleTodo('${t.id}')">
+      <span class="t">${esc(t.text)}</span>
+      <button class="icon-btn" onclick="delTodo('${t.id}')">🗑</button>
+    </div>`).join("");
+}
+window.addTodo=async function(){ const i=document.getElementById("todoInput"); const v=i.value.trim(); if(!v)return; state.todos.push({id:id(),text:v,done:false}); i.value=""; await save(); document.getElementById("todoList").innerHTML=renderTodoList(); };
+window.toggleTodo=async function(tid){ const t=state.todos.find(x=>x.id===tid); if(t){t.done=!t.done; await save(); document.getElementById("todoList").innerHTML=renderTodoList();} };
+window.delTodo=async function(tid){ state.todos=state.todos.filter(x=>x.id!==tid); await save(); document.getElementById("todoList").innerHTML=renderTodoList(); };
 
-async function removeItem(table,id,parentView){
-  if(!confirm("Delete this record? This cannot be undone.")) return;
-  const {error}=await sb.from(table).delete().eq("id",id);
-  if(error){ toast("Error: "+error.message); return; }
-  await logActivity("delete", table, "", id);
-  toast("Deleted"); show(parentView);
-}
-
-/* ---------- data management ---------- */
-async function downloadBackup(){
-  toast("Preparing backup\u2026");
-  const out={};
-  for(const t of ALL_TABLES){ try{ out[t]=await fetchTable(t); }catch(e){ out[t]=[]; } }
-  const blob=new Blob([JSON.stringify(out,null,2)],{type:"application/json"});
-  const url=URL.createObjectURL(blob); const a=document.createElement("a");
-  a.href=url; a.download="eduvoyage-backup-"+todayISO()+".json"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-  toast("Backup downloaded");
-}
-function csvCell(v){ return '"'+String(v==null?"":v).replace(/"/g,'""')+'"'; }
-async function exportCSV(){
-  toast("Preparing CSV\u2026");
-  const blocks={
-    CLIENTS:["invoice_no","client_name","phone","service","country","status","last_followup","balance","google_drive_link"],
-    ATTENDANCE:["name","date","time_in"],
-    "SOCIAL MEDIA":["brand","platform","content_type","topic","post_date","status"],
-    "CE MANAGEMENT":["task","task_date","status","notes"],
-    "MY TO-DOS":["task","priority","status","due_date"],
-    "CE REPORTS":["week","total_leads","leads_followed_up","converted_leads","pending_leads","lost_leads","client_responses","ce_opinion","feedback"],
-    WEBINARS:["title","speaker","event_date","event_time","status","description"],
-    SERVICES:["service_name","description","price"],
-    SCHOLARSHIPS:["country","destination","deadline","status"],
-    REVENUE:["date","client","service","amount"],
-    EXPENSES:["date","category","description","amount"]
-  };
-  const map={CLIENTS:"clients",ATTENDANCE:"attendance","SOCIAL MEDIA":"social_media","CE MANAGEMENT":"ce_tasks","MY TO-DOS":"todos","CE REPORTS":"ce_reports",WEBINARS:"webinars",SERVICES:"services",SCHOLARSHIPS:"scholarships",REVENUE:"revenue",EXPENSES:"expenses"};
-  let outStr="";
-  for(const title in blocks){
-    let data=[]; try{ data=await fetchTable(map[title]); }catch(e){}
-    outStr+=title+"\n"+blocks[title].map(csvCell).join(",")+"\n";
-    data.forEach(r=>{ outStr+=blocks[title].map(k=>csvCell(r[k])).join(",")+"\n"; });
-    outStr+="\n";
-  }
-  const blob=new Blob([outStr],{type:"text/csv"}); const url=URL.createObjectURL(blob); const a=document.createElement("a");
-  a.href=url; a.download="eduvoyage-export-"+todayISO()+".csv"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-  await logActivity("export","settings","Exported all data to CSV"); toast("CSV exported");
-}
-async function clearAll(){
-  if(!confirm("This permanently deletes ALL workspace data from the cloud (clients, finances, social, etc.). Attendance and the activity log are immutable and will remain. Continue?")) return;
-  if(!confirm("Are you absolutely sure? Download a backup first if unsure.")) return;
-  const clearable=ALL_TABLES.filter(t=>t!=="attendance"&&t!=="activity_log");
-  for(const t of clearable){ try{ await sb.from(t).delete().not("id","is",null); }catch(e){} }
-  await logActivity("clear","settings","All data cleared"); toast("All data cleared"); show("settings");
+/* ---------- Activity Log (code-locked) ---------- */
+function renderActivity(){
+  if(!activityUnlocked){ return gate("Activity Log","This page is private. Enter the activity code to view it.", ()=>{activityUnlocked=true;renderActivity();}, ACTIVITY_CODE); }
+  const rows=state.activity.map(a=>`<div style="display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)"><span style="font-size:14px">${esc(a.msg)}</span><span class="muted" style="font-size:12.5px;white-space:nowrap">${fmtDateTime(a.ts)}</span></div>`).join("");
+  view().innerHTML=`
+    <div class="card pad">
+      <div class="row-between" style="margin-bottom:6px">
+        <div class="section-title"><span class="tick"></span>Everything that's happened (${state.activity.length})</div>
+        <button class="btn sm ghost" onclick="activityUnlocked=false;renderActivity()">Lock again</button>
+      </div>
+      ${rows || `<p class="muted" style="margin-top:10px">Nothing logged yet.</p>`}
+    </div>`;
 }
 
-/* ---------- listeners ---------- */
+/* ---------- code gate ---------- */
+function gate(title,msg,onOk,code){
+  view().innerHTML=`
+    <div class="gate">
+      <div class="lockic">🔒</div>
+      <h3>${esc(title)}</h3><p>${esc(msg)}</p>
+      <input id="gateInput" type="password" placeholder="••••••" autocomplete="off">
+      <p class="err" id="gateErr" style="text-align:center"></p>
+      <button class="btn full" id="gateBtn">Unlock</button>
+    </div>`;
+  const inp=document.getElementById("gateInput");
+  const attempt=()=>{ if(inp.value===code){ onOk(); } else { document.getElementById("gateErr").textContent="Wrong code."; inp.value=""; } };
+  document.getElementById("gateBtn").onclick=attempt;
+  inp.addEventListener("keydown",e=>{ if(e.key==="Enter") attempt(); });
+  inp.focus();
+}
+
+/* ---------- modal helpers ---------- */
+function openModal(title,bodyHTML,onSave,saveLabel){
+  document.getElementById("mTitle").textContent=title;
+  document.getElementById("mBody").innerHTML=bodyHTML;
+  const foot=document.getElementById("mFoot");
+  foot.innerHTML="";
+  const cancel=document.createElement("button"); cancel.className="btn ghost"; cancel.textContent="Cancel"; cancel.onclick=closeModal;
+  const ok=document.createElement("button"); ok.className="btn"; ok.textContent=saveLabel||"Save"; ok.onclick=onSave;
+  foot.appendChild(cancel); foot.appendChild(ok);
+  document.getElementById("overlay").classList.add("on");
+}
+function confirmModal(msg,onYes){
+  document.getElementById("mTitle").textContent="Please confirm";
+  document.getElementById("mBody").innerHTML=`<p style="margin:0">${msg}</p>`;
+  const foot=document.getElementById("mFoot"); foot.innerHTML="";
+  const cancel=document.createElement("button"); cancel.className="btn ghost"; cancel.textContent="Cancel"; cancel.onclick=closeModal;
+  const yes=document.createElement("button"); yes.className="btn danger"; yes.textContent="Yes, delete"; yes.onclick=onYes;
+  foot.appendChild(cancel); foot.appendChild(yes);
+  document.getElementById("overlay").classList.add("on");
+}
+function closeModal(){ document.getElementById("overlay").classList.remove("on"); }
+document.getElementById("mClose").onclick=closeModal;
 document.getElementById("overlay").addEventListener("click",e=>{ if(e.target.id==="overlay") closeModal(); });
-document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
-document.getElementById("loginPass").addEventListener("keydown",e=>{ if(e.key==="Enter") login(); });
-/* loginUser removed - single user login */
 
-/* ---------- init ---------- */
-function showSetup(){
-  document.getElementById("loginForm").innerHTML=
-    '<div class="setup-box"><strong>Setup needed.</strong><br>Open this file and paste your Supabase credentials near the top of the script:<br><br>'+
-    '&bull; <code>SUPABASE_URL</code><br>&bull; <code>SUPABASE_ANON_KEY</code><br><br>'+
-    'Then create two users in Supabase Authentication:<br>&bull; <code>'+esc(ADMIN_EMAIL)+'</code> (admin)<br>&bull; <code>'+esc(CE_EMAIL)+'</code> (ce)<br><br>Reload the page after saving.</div>';
-}
-async function init(){
-  if(!configured()){ showSetup(); return; }
-  if(typeof supabase==="undefined"){ document.getElementById("loginErr").textContent="Could not load Supabase library (check your internet connection)."; return; }
-  sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  try{
-    const { data:{ session:s } } = await sb.auth.getSession();
-    if(s && s.user){ session=roleFromEmail(s.user.email); subscribeRealtime(); startApp(); }
-  }catch(e){ /* fall through to login */ }
-}
-init();
+/* ---------- boot ---------- */
+(async function(){ await initSync(); })();
 </script>
 </body>
 </html>
