@@ -280,13 +280,13 @@
         <button class="nav-item" data-page="webinars"><span class="ic">◈</span> Webinars</button>
         <button class="nav-item" data-page="social"><span class="ic">✦</span> Social Media</button>
         <button class="nav-item" data-page="services"><span class="ic">❯</span> Services &amp; Info</button>
-        <button class="nav-item" data-page="finances"><span class="ic">▦</span> Finances <span class="lock">🔒</span></button>
+        <button class="nav-item" data-page="finances"><span class="ic">▦</span> Finances</button>
       </div>
 
       <div class="nav-group">
         <div class="label">Private</div>
         <button class="nav-item" data-page="personal"><span class="ic">✎</span> Personal Workspace</button>
-        <button class="nav-item" data-page="activity"><span class="ic">≣</span> Activity Log <span class="lock">🔒</span></button>
+        <button class="nav-item" data-page="activity"><span class="ic">≣</span> Activity Log</button>
       </div>
 
       <div class="side-foot">
@@ -324,8 +324,7 @@
    CONFIG — change these three passwords, and (optionally) turn on sync.
    ========================================================================= */
 const TEAM_PASSWORD = "eduvoyage";     // shared login for everyone
-const FINANCE_CODE  = "money2026";     // needed to open Finances
-const ACTIVITY_CODE = "log2026";       // needed to open Activity Log
+const ADMIN_CODE    = "admin2026";     // unlocks the private pages: Dashboard, Client Work, Personal Workspace, Finances, Activity Log
 
 /* CROSS-DEVICE SYNC (optional).
    Leave both blank -> the workspace saves on THIS device only.
@@ -338,6 +337,10 @@ const SUPABASE_ANON_KEY = "sb_publishable__KpMdG9k3Z2aXbS39JaoGg_WB-okR89";
 
 const STORE_KEY = "eduvoyage_ws_v2";
 const STATE_ID  = "main";
+const EDU_LOGGED = "edu_logged";   // remembers team login on this device
+const EDU_ADMIN  = "edu_admin";    // remembers admin unlock on this device
+function authGet(k){ try{ return localStorage.getItem(k)==="1"; }catch(e){ return false; } }
+function authSet(k,v){ try{ v?localStorage.setItem(k,"1"):localStorage.removeItem(k); }catch(e){} }
 let sb = null, syncing = false, memoryOnly = false, memoryBlob = null;
 
 /* ---------- seed data (the clients visible in your workspace) ---------- */
@@ -421,16 +424,17 @@ document.getElementById("pw").addEventListener("keydown", e=>{ if(e.key==="Enter
 function tryLogin(){
   const v = document.getElementById("pw").value;
   if(v === TEAM_PASSWORD){
+    authSet(EDU_LOGGED, true);
     document.getElementById("login").style.display="none";
     document.getElementById("app").style.display="block";
     renderSyncTag();
-    go("dashboard");
+    go("attendance");
   } else {
     document.getElementById("loginErr").textContent = "That password isn't right. Try again.";
   }
 }
 document.getElementById("logoutBtn").onclick = ()=>{
-  financeUnlocked=false; activityUnlocked=false;
+  adminUnlocked=false; authSet(EDU_LOGGED,false); authSet(EDU_ADMIN,false);
   document.getElementById("app").style.display="none";
   document.getElementById("login").style.display="flex";
   document.getElementById("pw").value=""; document.getElementById("loginErr").textContent="";
@@ -443,8 +447,9 @@ function renderSyncTag(){
 }
 
 /* ---------- router ---------- */
-let current = "dashboard";
-let financeUnlocked=false, activityUnlocked=false;
+let current = "attendance";
+let adminUnlocked=false;
+const LOCKED = ["dashboard","clients","personal","finances","activity"];
 const TITLES = {
   dashboard:["Dashboard","A quick look at where things stand today"],
   attendance:["Daily Sign-in","Sign in for the day and see who's online"],
@@ -465,7 +470,11 @@ function go(page){
   renderCurrent();
 }
 document.querySelectorAll(".nav-item").forEach(b=> b.onclick = ()=>go(b.dataset.page));
-function renderCurrent(){ ({dashboard:renderDashboard,attendance:renderAttendance,clients:renderClients,webinars:renderWebinars,social:renderSocial,services:renderServices,finances:renderFinances,personal:renderPersonal,activity:renderActivity}[current])(); }
+function renderCurrent(){
+  if(LOCKED.includes(current) && !adminUnlocked){ return adminGate(); }
+  ({dashboard:renderDashboard,attendance:renderAttendance,clients:renderClients,webinars:renderWebinars,social:renderSocial,services:renderServices,finances:renderFinances,personal:renderPersonal,activity:renderActivity}[current])();
+}
+function lockAdmin(){ adminUnlocked=false; authSet(EDU_ADMIN,false); go("attendance"); }
 const view = ()=>document.getElementById("view");
 function topBtn(label, fn){
   const el=document.getElementById("topAction");
@@ -750,7 +759,6 @@ function renderServices(){
 
 /* ---------- Finances (code-locked) ---------- */
 function renderFinances(){
-  if(!financeUnlocked){ return gate("Finances","This page is private. Enter the finance code to view it.", ()=>{financeUnlocked=true;renderFinances();}, FINANCE_CODE); }
   topBtn("Add entry", ()=>financeForm());
   let inSum=0,outSum=0;
   state.finances.forEach(f=> f.type==="in"?inSum+=Number(f.amount):outSum+=Number(f.amount));
@@ -771,7 +779,7 @@ function renderFinances(){
     <div class="card">
       <div class="pad" style="padding-bottom:6px;display:flex;justify-content:space-between;align-items:center">
         <div class="section-title"><span class="tick"></span>Ledger</div>
-        <button class="btn sm ghost" onclick="financeUnlocked=false;renderFinances()">Lock again</button>
+        <button class="btn sm ghost" onclick="lockAdmin()">Lock again</button>
       </div>
       <div style="overflow-x:auto"><table>
         <thead><tr><th>Date</th><th>Description</th><th>Type</th><th style="text-align:right">Amount</th><th></th></tr></thead>
@@ -836,19 +844,22 @@ window.delTodo=async function(tid){ state.todos=state.todos.filter(x=>x.id!==tid
 
 /* ---------- Activity Log (code-locked) ---------- */
 function renderActivity(){
-  if(!activityUnlocked){ return gate("Activity Log","This page is private. Enter the activity code to view it.", ()=>{activityUnlocked=true;renderActivity();}, ACTIVITY_CODE); }
+
   const rows=state.activity.map(a=>`<div style="display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)"><span style="font-size:14px">${esc(a.msg)}</span><span class="muted" style="font-size:12.5px;white-space:nowrap">${fmtDateTime(a.ts)}</span></div>`).join("");
   view().innerHTML=`
     <div class="card pad">
       <div class="row-between" style="margin-bottom:6px">
         <div class="section-title"><span class="tick"></span>Everything that's happened (${state.activity.length})</div>
-        <button class="btn sm ghost" onclick="activityUnlocked=false;renderActivity()">Lock again</button>
+        <button class="btn sm ghost" onclick="lockAdmin()">Lock again</button>
       </div>
       ${rows || `<p class="muted" style="margin-top:10px">Nothing logged yet.</p>`}
     </div>`;
 }
 
-/* ---------- code gate ---------- */
+/* ---------- admin gate (one code unlocks all private pages) ---------- */
+function adminGate(){
+  gate("Private area","Enter the admin code to open this page.", ()=>{ adminUnlocked=true; authSet(EDU_ADMIN,true); renderCurrent(); }, ADMIN_CODE);
+}
 function gate(title,msg,onOk,code){
   view().innerHTML=`
     <div class="gate">
@@ -890,7 +901,16 @@ document.getElementById("mClose").onclick=closeModal;
 document.getElementById("overlay").addEventListener("click",e=>{ if(e.target.id==="overlay") closeModal(); });
 
 /* ---------- boot ---------- */
-(async function(){ await initSync(); })();
+function autoLogin(){
+  if(authGet(EDU_LOGGED)){
+    adminUnlocked = authGet(EDU_ADMIN);
+    document.getElementById("login").style.display="none";
+    document.getElementById("app").style.display="block";
+    renderSyncTag();
+    go("attendance");
+  }
+}
+(async function(){ await initSync(); autoLogin(); })();
 </script>
 </body>
 </html>
