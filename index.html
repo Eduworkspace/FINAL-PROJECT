@@ -272,7 +272,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     </div>
     <p class="err" id="loginErr"></p>
     <button class="btn full" id="loginBtn">Sign in</button>
-    <p class="login-hint">One shared login for the whole team. Finances has its own separate code; the Personal Workspace and Activity Log use the admin code.</p>
+    <p class="login-hint">One shared login for the whole team. Sign-in, Social Media and Webinars are open to everyone; Dashboard, Client Work and the private pages need the admin code, and Finances has its own separate code.</p>
   </div>
 </div>
 
@@ -343,7 +343,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 const TEAM_PASSWORD = "eduvoyage";     // shared login for everyone
 const ADMIN_CODE    = "admin2026";     // unlocks Personal Workspace + Activity Log
 const FINANCE_CODE  = "money2026";     // Finances only — KEEP THIS DIFFERENT from ADMIN_CODE
-const VERSION       = "v2.7 · 12 Sep 2026";   // shows in the sidebar so everyone can confirm they're on the same copy
+const VERSION       = "v2.8 · 12 Sep 2026";   // shows in the sidebar so everyone can confirm they're on the same copy
 
 /* CROSS-DEVICE SYNC (optional).
    Leave both blank -> the workspace saves on THIS device only.
@@ -530,7 +530,7 @@ function renderSyncTag(){
 let current = "attendance";
 let adminUnlocked=false;
 let finUnlocked=false;
-const LOCKED = ["personal","activity","finances"];   // Dashboard + Client Work are now open to the team
+const LOCKED = ["dashboard","clients","services","personal","activity","finances"];   // open to all: Daily Sign-in, Social Media, Webinars
 const TITLES = {
   dashboard:["Dashboard","A quick look at where things stand today"],
   attendance:["Daily Sign-in","Sign in for the day and see who's online"],
