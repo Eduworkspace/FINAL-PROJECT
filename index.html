@@ -55,7 +55,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     letter-spacing:-.01em;
   }
   button{font-family:inherit;cursor:pointer}
-  input,textarea,select{font-family:inherit}
+  input,textarea,select{font-family:inherit;color:inherit}
 
   /* ---------- LOGIN ---------- */
   #login{
@@ -201,6 +201,18 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   .social-plat{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
   .social-handle{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .social-card .btn.sm{flex:none;text-decoration:none}
+  .svc-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+  .svc-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+  .svc-name{font-size:17px;font-weight:700;letter-spacing:-.01em}
+  .svc-fees{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .svc-fee{flex:1;min-width:130px;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+  .svc-fee-l{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600;margin-bottom:4px}
+  .svc-fee-v{font-size:16px;font-weight:700;color:var(--ink)}
+  .svc-reqs-l{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:6px}
+  .svc-reqs ul{margin:0;padding:0;list-style:none}
+  .svc-reqs li{position:relative;padding:7px 0 7px 20px;font-size:13.5px;line-height:1.5;border-bottom:1px solid var(--line);font-weight:500}
+  .svc-reqs li:last-child{border-bottom:none}
+  .svc-reqs li::before{content:"";position:absolute;left:3px;top:13px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
   /* Keep edit/delete pinned to the right so they're always reachable when a wide table scrolls */
   th.col-actions,td.col-actions{position:sticky;right:0;background:var(--surface);white-space:nowrap;text-align:right;box-shadow:-10px 0 14px rgba(20,30,50,.05)}
   tbody tr:hover td.col-actions{background:#1C2432}
@@ -358,7 +370,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 const TEAM_PASSWORD = "eduvoyage";     // shared login for everyone
 const ADMIN_CODE    = "admin2026";     // unlocks Personal Workspace + Activity Log
 const FINANCE_CODE  = "money2026";     // Finances only — KEEP THIS DIFFERENT from ADMIN_CODE
-const VERSION       = "v3.3 · 13 Sep 2026";   // shows in the sidebar so everyone can confirm they're on the same copy
+const VERSION       = "v3.6 · 13 Sep 2026";   // shows in the sidebar so everyone can confirm they're on the same copy
 
 /* CROSS-DEVICE SYNC (optional).
    Leave both blank -> the workspace saves on THIS device only.
@@ -1016,19 +1028,23 @@ function renderServices(){
   const group = (cat) => {
     const list = state.services.filter(s=>s.category===cat);
     return `
-    <div class="card" style="margin-bottom:20px">
-      <div class="pad" style="padding-bottom:6px"><div class="section-title"><span class="tick"></span>${esc(cat)}</div></div>
-      <div style="overflow-x:auto"><table>
-        <thead><tr><th>Country / package</th><th>Guided review</th><th>Full service</th><th>Requirements</th><th class="col-actions"></th></tr></thead>
-        <tbody>${list.length ? list.map(s=>`
-          <tr>
-            <td class="client-name">${esc(s.name)}</td>
-            <td>${fee(s.guided)}</td>
-            <td>${fee(s.full)}</td>
-            <td class="muted">${esc(s.reqs)}</td>
-            <td class="col-actions"><button class="icon-btn edit" onclick="serviceForm('${s.id}')">✎</button><button class="icon-btn del" onclick="delService('${s.id}')">🗑</button></td>
-          </tr>`).join("") : `<tr><td colspan="5" class="muted" style="padding:14px">Nothing added yet. Use “Add service”.</td></tr>`}</tbody>
-      </table></div>
+    <div style="margin-bottom:24px">
+      <div class="section-title" style="margin-bottom:14px"><span class="tick"></span>${esc(cat)}</div>
+      ${list.length ? list.map(s=>{
+        const reqs = (s.reqs||"").split(/\n|,/).map(x=>x.trim()).filter(Boolean);
+        return `
+        <div class="svc-card">
+          <div class="svc-top">
+            <div class="svc-name">${esc(s.name)}</div>
+            <div><button class="icon-btn edit" onclick="serviceForm('${s.id}')">✎</button><button class="icon-btn del" onclick="delService('${s.id}')">🗑</button></div>
+          </div>
+          <div class="svc-fees">
+            <div class="svc-fee"><span class="svc-fee-l">Guided review</span><span class="svc-fee-v">${fee(s.guided)}</span></div>
+            <div class="svc-fee"><span class="svc-fee-l">Full service</span><span class="svc-fee-v">${fee(s.full)}</span></div>
+          </div>
+          ${reqs.length ? `<div class="svc-reqs"><div class="svc-reqs-l">Requirements</div><ul>${reqs.map(r=>`<li>${esc(r)}</li>`).join("")}</ul></div>` : ""}
+        </div>`;
+      }).join("") : `<p class="muted">Nothing added yet. Use “Add service”.</p>`}
     </div>`;
   };
   view().innerHTML=`
@@ -1058,7 +1074,7 @@ window.serviceForm=function(sid){
       <div class="field"><label>Guided review fee (₦)</label><input id="s_guided" type="number" value="${esc(s.guided)}" placeholder="Leave blank if n/a"></div>
       <div class="field"><label>Full service / package fee (₦)</label><input id="s_full" type="number" value="${esc(s.full)}" placeholder="0"></div>
     </div>
-    <div class="field"><label>Requirements / documents</label><textarea id="s_reqs" style="min-height:90px" placeholder="What the client needs to provide">${esc(s.reqs)}</textarea></div>
+    <div class="field"><label>Requirements / documents</label><textarea id="s_reqs" style="min-height:110px" placeholder="One per line (or separated by commas) — each becomes a bullet">${esc(s.reqs)}</textarea></div>
   `, async ()=>{
     const name=document.getElementById("s_name").value.trim();
     if(!name){ alert("Country or package name is needed."); return; }
@@ -1156,7 +1172,7 @@ function renderPersonal(){
         <div class="section-title"><span class="tick"></span>To-dos</div>
       </div>
       <div style="display:flex;gap:10px;margin-bottom:8px">
-        <input id="todoInput" placeholder="Add something to do..." style="flex:1;padding:11px 12px;border:1.5px solid var(--line-strong);border-radius:10px;font-size:14.5px;background:#0E141E">
+        <input id="todoInput" placeholder="Add something to do..." style="flex:1;padding:11px 12px;border:1.5px solid var(--line-strong);border-radius:10px;font-size:14.5px;background:#0E141E;color:var(--ink)">
         <button class="btn" onclick="addTodo()">Add</button>
       </div>
       <div id="todoList">${renderTodoList()}</div>
@@ -1164,7 +1180,7 @@ function renderPersonal(){
     <div class="card pad">
       <div class="section-title"><span class="tick"></span>Notes</div>
       <p class="muted" style="margin:6px 0 12px">Anything you like — ideas, reminders, drafts. Saves as you type.</p>
-      <textarea id="notesBox" style="width:100%;min-height:260px;border:1.5px solid var(--line-strong);border-radius:12px;padding:14px;font-size:14.5px;line-height:1.6;background:#0E141E;resize:vertical" placeholder="Start writing...">${esc(state.notes)}</textarea>
+      <textarea id="notesBox" style="width:100%;min-height:260px;border:1.5px solid var(--line-strong);border-radius:12px;padding:14px;font-size:14.5px;line-height:1.6;background:#0E141E;resize:vertical;color:var(--ink)" placeholder="Start writing...">${esc(state.notes)}</textarea>
     </div>`;
   const box=document.getElementById("notesBox");
   let tmr; box.addEventListener("input",()=>{ clearTimeout(tmr); tmr=setTimeout(async ()=>{ state.notes=box.value; await save(); },500); });
