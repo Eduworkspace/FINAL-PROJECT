@@ -190,6 +190,14 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   .icon-btn:hover{background:var(--bg);color:var(--ink)}
   .icon-btn.edit{color:var(--accent)}
   .icon-btn.del{color:var(--red)}
+  .social-grid{display:grid;grid-template-columns:1fr;gap:10px}
+  @media(min-width:720px){ .social-grid{grid-template-columns:1fr 1fr} }
+  .social-card{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:13px;padding:11px 13px;background:#FDFCFB}
+  .social-badge{width:38px;height:38px;border-radius:10px;flex:none;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;letter-spacing:.5px}
+  .social-meta{flex:1;min-width:0}
+  .social-plat{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+  .social-handle{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .social-card .btn.sm{flex:none;text-decoration:none}
   /* Keep edit/delete pinned to the right so they're always reachable when a wide table scrolls */
   th.col-actions,td.col-actions{position:sticky;right:0;background:#fff;white-space:nowrap;text-align:right;box-shadow:-10px 0 14px rgba(20,30,50,.05)}
   tbody tr:hover td.col-actions{background:#FBFAF7}
@@ -348,7 +356,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 const TEAM_PASSWORD = "eduvoyage";     // shared login for everyone
 const ADMIN_CODE    = "admin2026";     // unlocks Personal Workspace + Activity Log
 const FINANCE_CODE  = "money2026";     // Finances only — KEEP THIS DIFFERENT from ADMIN_CODE
-const VERSION       = "v3.0 · 13 Sep 2026";   // shows in the sidebar so everyone can confirm they're on the same copy
+const VERSION       = "v3.1 · 13 Sep 2026";   // shows in the sidebar so everyone can confirm they're on the same copy
 
 /* CROSS-DEVICE SYNC (optional).
    Leave both blank -> the workspace saves on THIS device only.
@@ -395,6 +403,14 @@ function seed(){
     attendance:[],   // {name, date, time}
     webinars:[],     // {id, title, date, topic, status, notes}
     content:[],      // {id, area:'study'|'travel', title, body, week, date}
+    socials:[        // {id, group, platform, handle, url}
+      {id:"soc_ig_study",   group:"Study Abroad",   platform:"Instagram", handle:"@eduvoyage_consult",    url:"https://www.instagram.com/eduvoyage_consult"},
+      {id:"soc_tk_study",   group:"Study Abroad",   platform:"TikTok",    handle:"@aminateduvoyage",     url:"https://www.tiktok.com/@aminateduvoyage"},
+      {id:"soc_fb_study",   group:"Study Abroad",   platform:"Facebook",  handle:"Eduvoyage Consult",    url:"https://www.facebook.com/profile.php?id=61592848754402"},
+      {id:"soc_ig_travel",  group:"Travel & Tours", platform:"Instagram", handle:"@eduvoyagetraveltours",url:"https://www.instagram.com/eduvoyagetraveltours"},
+      {id:"soc_tk_travel",  group:"Travel & Tours", platform:"TikTok",    handle:"@eduvoyagetraveltour", url:"https://www.tiktok.com/@eduvoyagetraveltour"},
+      {id:"soc_ig_personal",group:"Personal",       platform:"Instagram", handle:"@aminatolasesan",      url:"https://www.instagram.com/aminatolasesan"}
+    ],
     services:[       // {id, category, name, reqs, guided, full}
       {id:"svc_canada",   category:"Study Abroad", name:"Canada",            reqs:"Admission, proof of funds (6-month statements), PAL, SOP, English test", guided:200000, full:500000},
       {id:"svc_uk",       category:"Study Abroad", name:"UK",                reqs:"CAS, tuition + maintenance funds, English test, SOP",                 guided:200000, full:500000},
@@ -456,6 +472,7 @@ function mergeState(local, remote){
   m.content    = unionBy(remote.content,    local.content,    x=>x.id);
   m.finances   = unionBy(remote.finances,   local.finances,   x=>x.id);
   m.services   = unionBy(remote.services,    local.services,    x=>x.id);
+  m.socials    = unionBy(remote.socials,     local.socials,     x=>x.id);
   m.todos      = unionBy(remote.todos,      local.todos,      x=>x.id);
   m.activity   = unionBy(remote.activity,   local.activity,   x=>x.ts+"|"+x.msg).slice(0,400);
   m.roster     = unionBy((remote.roster||[]).map(n=>({v:n})), (local.roster||[]).map(n=>({v:n})), x=>x.v).map(x=>x.v);
@@ -897,12 +914,73 @@ function renderSocial(){
     </div>`;
   };
   view().innerHTML=`
+    ${renderSocialHub()}
+    <div class="section-title" style="margin:6px 0 14px"><span class="tick"></span>Content planner</div>
     <p class="muted" style="margin:0 0 16px">Finished captions and scripts, ready to copy and post. Study abroad on the left, travel and tours on the right.</p>
     <div class="split">
       ${col("study","Study Abroad","#1B47B0")}
       ${col("travel","Travel &amp; Tours","#FF7A1A")}
     </div>`;
 }
+const PLAT = {
+  Instagram:{c:"#E1306C",i:"IG"}, TikTok:{c:"#111827",i:"TT"}, Facebook:{c:"#1877F2",i:"FB"},
+  "Twitter / X":{c:"#111827",i:"X"}, YouTube:{c:"#FF0000",i:"YT"}, WhatsApp:{c:"#25D366",i:"WA"}, Other:{c:"#6B7280",i:"•"}
+};
+const PLAT_LIST = Object.keys(PLAT);
+function renderSocialHub(){
+  const socials = state.socials||[];
+  const groups = [...new Set(socials.map(s=>s.group))];
+  const groupBlock = g => {
+    const list = socials.filter(s=>s.group===g);
+    return `<div style="margin-bottom:18px">
+      <div class="muted" style="font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">${esc(g)}</div>
+      <div class="social-grid">
+        ${list.map(s=>{ const p=PLAT[s.platform]||PLAT.Other; return `
+          <div class="social-card">
+            <div class="social-badge" style="background:${p.c}">${p.i}</div>
+            <div class="social-meta"><div class="social-plat">${esc(s.platform)}</div><div class="social-handle">${esc(s.handle)}</div></div>
+            <a class="btn sm" href="${esc(s.url)}" target="_blank" rel="noopener">Open</a>
+            <button class="icon-btn edit" onclick="socialForm('${s.id}')">✎</button>
+            <button class="icon-btn del" onclick="delSocial('${s.id}')">🗑</button>
+          </div>`;}).join("")}
+      </div>
+    </div>`;
+  };
+  return `
+    <div class="card pad" style="margin-bottom:22px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="section-title" style="margin:0"><span class="tick"></span>Our pages</div>
+        <button class="btn sm ghost" onclick="socialForm()">Add page</button>
+      </div>
+      ${socials.length ? groups.map(groupBlock).join("") : `<p class="muted" style="margin:0">No pages yet. Use “Add page”.</p>`}
+      <p class="muted" style="font-size:12px;margin:2px 0 0">Tap Open to jump straight to the page in the app, ready to post.</p>
+    </div>`;
+}
+window.socialForm=function(sid){
+  const s=sid?(state.socials||[]).find(x=>x.id===sid):{group:"Study Abroad",platform:"Instagram",handle:"",url:""};
+  const groups=["Study Abroad","Travel & Tours","Personal"];
+  openModal(sid?"Edit page":"Add page",`
+    <div class="grid2">
+      <div class="field"><label>Group</label><select id="so_group">${groups.map(g=>`<option ${g===s.group?"selected":""}>${g}</option>`).join("")}</select></div>
+      <div class="field"><label>Platform</label><select id="so_plat">${PLAT_LIST.map(p=>`<option ${p===s.platform?"selected":""}>${p}</option>`).join("")}</select></div>
+    </div>
+    <div class="field"><label>Handle / name</label><input id="so_handle" value="${esc(s.handle)}" placeholder="@yourpage"></div>
+    <div class="field"><label>Link</label><input id="so_url" value="${esc(s.url)}" placeholder="https://..."></div>
+  `, async ()=>{
+    const url=document.getElementById("so_url").value.trim();
+    const handle=document.getElementById("so_handle").value.trim();
+    if(!url){ alert("Add the page link."); return; }
+    const data={group:document.getElementById("so_group").value,platform:document.getElementById("so_plat").value,handle:handle||"—",url};
+    if(!Array.isArray(state.socials)) state.socials=[];
+    if(sid){ Object.assign(s,data); log(`Updated page — ${handle}`); }
+    else { state.socials.push(Object.assign({id:id()},data)); log(`Added page — ${handle}`); }
+    await save(); closeModal(); renderSocial();
+  });
+};
+window.delSocial=function(sid){
+  const s=(state.socials||[]).find(x=>x.id===sid); if(!s) return;
+  confirmModal(`Remove ${esc(s.handle)} from pages?`, async ()=>{ state.socials=state.socials.filter(x=>x.id!==sid); log(`Removed page ${s.handle}`); await save(); closeModal(); renderSocial(); });
+};
 window.copyContent=function(cid,btn){
   const c=state.content.find(x=>x.id===cid); if(!c) return;
   const text=(c.title?c.title+"\n\n":"")+c.body;
