@@ -348,7 +348,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 const TEAM_PASSWORD = "eduvoyage";     // shared login for everyone
 const ADMIN_CODE    = "admin2026";     // unlocks Personal Workspace + Activity Log
 const FINANCE_CODE  = "money2026";     // Finances only — KEEP THIS DIFFERENT from ADMIN_CODE
-const VERSION       = "v2.9 · 13 Sep 2026";   // shows in the sidebar so everyone can confirm they're on the same copy
+const VERSION       = "v3.0 · 13 Sep 2026";   // shows in the sidebar so everyone can confirm they're on the same copy
 
 /* CROSS-DEVICE SYNC (optional).
    Leave both blank -> the workspace saves on THIS device only.
@@ -494,7 +494,15 @@ async function initSync(){
       const up = await sb.from("workspace_state").upsert({id:STATE_ID, data:state, updated_at:new Date().toISOString()});
       if(up && up.error){ throw new Error(up.error.message || (up.error.code?("code "+up.error.code):"write failed")); }
       syncing = true; syncError = null;    // only now is it truly synced
-      setInterval(async ()=>{ if(document.getElementById("app").style.display!=="none"){ await pull(); renderCurrent(); } }, 15000);
+      setInterval(async ()=>{
+        if(document.getElementById("app").style.display==="none") return;   // not signed in
+        const el = document.activeElement;
+        const typing = el && (el.tagName==="INPUT" || el.tagName==="TEXTAREA" || el.isContentEditable);
+        const overlay = document.getElementById("overlay");
+        const modalOpen = overlay && overlay.classList.contains("on");
+        if(typing || modalOpen) return;   // never redraw while someone is typing or filling a form
+        await pull(); renderCurrent();
+      }, 15000);
       return;
     }catch(e){ console.warn("Supabase sync not working:", e); sb=null; syncing=false; syncError=(e&&e.message)?e.message:String(e); }
   }
@@ -1080,6 +1088,7 @@ function renderPersonal(){
     </div>`;
   const box=document.getElementById("notesBox");
   let tmr; box.addEventListener("input",()=>{ clearTimeout(tmr); tmr=setTimeout(async ()=>{ state.notes=box.value; await save(); },500); });
+  box.addEventListener("blur",async ()=>{ clearTimeout(tmr); state.notes=box.value; await save(); });   // save the moment you tap away
   document.getElementById("todoInput").addEventListener("keydown",e=>{ if(e.key==="Enter") addTodo(); });
 }
 function renderTodoList(){
