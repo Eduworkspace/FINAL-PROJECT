@@ -186,8 +186,13 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   .pill.purple{background:var(--purple-bg);color:var(--purple)}
   .pill.grey{background:var(--grey-bg);color:var(--grey)}
 
-  .icon-btn{background:transparent;border:none;color:var(--faint);font-size:15px;padding:7px 9px;border-radius:9px}
+  .icon-btn{background:transparent;border:none;color:var(--muted);font-size:18px;padding:9px 11px;border-radius:9px;cursor:pointer}
   .icon-btn:hover{background:var(--bg);color:var(--ink)}
+  .icon-btn.edit{color:var(--accent)}
+  .icon-btn.del{color:var(--red)}
+  /* Keep edit/delete pinned to the right so they're always reachable when a wide table scrolls */
+  th.col-actions,td.col-actions{position:sticky;right:0;background:#fff;white-space:nowrap;text-align:right;box-shadow:-10px 0 14px rgba(20,30,50,.05)}
+  tbody tr:hover td.col-actions{background:#FBFAF7}
 
   .empty{padding:46px 24px;text-align:center;color:var(--muted)}
   .empty .big{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px}
@@ -343,7 +348,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 const TEAM_PASSWORD = "eduvoyage";     // shared login for everyone
 const ADMIN_CODE    = "admin2026";     // unlocks Personal Workspace + Activity Log
 const FINANCE_CODE  = "money2026";     // Finances only — KEEP THIS DIFFERENT from ADMIN_CODE
-const VERSION       = "v2.8 · 12 Sep 2026";   // shows in the sidebar so everyone can confirm they're on the same copy
+const VERSION       = "v2.9 · 13 Sep 2026";   // shows in the sidebar so everyone can confirm they're on the same copy
 
 /* CROSS-DEVICE SYNC (optional).
    Leave both blank -> the workspace saves on THIS device only.
@@ -752,9 +757,9 @@ function renderClients(){
       <td style="text-align:right;color:var(--green)">${paid?naira(paid):'<span class="dash">—</span>'}</td>
       <td style="text-align:right;font-weight:700;color:${bal>0?'var(--red)':'var(--green)'}">${fee||paid?naira(bal):'<span class="dash">—</span>'}</td>
       <td style="text-align:center">${c.drive?`<a href="${esc(c.drive)}" target="_blank" rel="noopener" title="Open documents">📎</a>`:'<span class="dash">—</span>'}</td>
-      <td style="text-align:right;white-space:nowrap">
-        <button class="icon-btn" onclick="clientForm('${c.id}')">✎</button>
-        <button class="icon-btn" onclick="delClient('${c.id}')">🗑</button>
+      <td class="col-actions">
+        <button class="icon-btn edit" onclick="clientForm('${c.id}')">✎</button>
+        <button class="icon-btn del" onclick="delClient('${c.id}')">🗑</button>
       </td>
     </tr>`;}).join("");
   view().innerHTML = `
@@ -768,7 +773,7 @@ function renderClients(){
       <div class="pad" style="padding-bottom:6px"><div class="section-title"><span class="tick"></span>Requests &amp; clients (${state.clients.length})</div></div>
       <div style="overflow-x:auto">
         <table>
-          <thead><tr><th>Inv#</th><th>Name</th><th>Service</th><th>Country</th><th>Stage</th><th>Status</th><th style="text-align:right">Fee</th><th style="text-align:right">Paid</th><th style="text-align:right">Balance</th><th>Docs</th><th></th></tr></thead>
+          <thead><tr><th>Inv#</th><th>Name</th><th>Service</th><th>Country</th><th>Stage</th><th>Status</th><th style="text-align:right">Fee</th><th style="text-align:right">Paid</th><th style="text-align:right">Balance</th><th>Docs</th><th class="col-actions"></th></tr></thead>
           <tbody>${rows || `<tr><td colspan="11" class="empty"><div class="big">No requests yet</div>Add your first request to start tracking.</td></tr>`}</tbody>
         </table>
       </div>
@@ -828,16 +833,16 @@ function renderWebinars(){
       <td>${esc(w.topic)||'<span class="dash">—</span>'}</td>
       <td>${pill(w.status)}</td>
       <td class="muted" style="max-width:240px">${esc(w.notes)||""}</td>
-      <td style="text-align:right;white-space:nowrap">
-        <button class="icon-btn" onclick="webinarForm('${w.id}')">✎</button>
-        <button class="icon-btn" onclick="delWebinar('${w.id}')">🗑</button>
+      <td class="col-actions">
+        <button class="icon-btn edit" onclick="webinarForm('${w.id}')">✎</button>
+        <button class="icon-btn del" onclick="delWebinar('${w.id}')">🗑</button>
       </td>
     </tr>`).join("");
   view().innerHTML=`
     <div class="card">
       <div class="pad" style="padding-bottom:6px"><div class="section-title"><span class="tick"></span>Webinars (${state.webinars.length})</div></div>
       <div style="overflow-x:auto"><table>
-        <thead><tr><th>Title</th><th>Date</th><th>Topic</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+        <thead><tr><th>Title</th><th>Date</th><th>Topic</th><th>Status</th><th>Notes</th><th class="col-actions"></th></tr></thead>
         <tbody>${rows || `<tr><td colspan="6" class="empty"><div class="big">No webinars yet</div>Plan your next session.</td></tr>`}</tbody>
       </table></div>
     </div>`;
@@ -926,14 +931,14 @@ function renderServices(){
     <div class="card" style="margin-bottom:20px">
       <div class="pad" style="padding-bottom:6px"><div class="section-title"><span class="tick"></span>${esc(cat)}</div></div>
       <div style="overflow-x:auto"><table>
-        <thead><tr><th>Country / package</th><th>Guided review</th><th>Full service</th><th>Requirements</th><th></th></tr></thead>
+        <thead><tr><th>Country / package</th><th>Guided review</th><th>Full service</th><th>Requirements</th><th class="col-actions"></th></tr></thead>
         <tbody>${list.length ? list.map(s=>`
           <tr>
             <td class="client-name">${esc(s.name)}</td>
             <td>${fee(s.guided)}</td>
             <td>${fee(s.full)}</td>
             <td class="muted">${esc(s.reqs)}</td>
-            <td style="text-align:right;white-space:nowrap"><button class="icon-btn" onclick="serviceForm('${s.id}')">✎</button><button class="icon-btn" onclick="delService('${s.id}')">🗑</button></td>
+            <td class="col-actions"><button class="icon-btn edit" onclick="serviceForm('${s.id}')">✎</button><button class="icon-btn del" onclick="delService('${s.id}')">🗑</button></td>
           </tr>`).join("") : `<tr><td colspan="5" class="muted" style="padding:14px">Nothing added yet. Use “Add service”.</td></tr>`}</tbody>
       </table></div>
     </div>`;
@@ -1010,7 +1015,7 @@ function renderFinances(){
       <td class="client-name">${esc(f.desc)}</td>
       <td>${catPill(f)}</td>
       <td style="text-align:right;font-weight:700;color:${type==="in"?"var(--green)":"var(--red)"}">${type==="in"?"+":"−"}${naira(amt)}</td>
-      <td style="text-align:right"><button class="icon-btn" onclick="financeForm('${f.id}')">✎</button><button class="icon-btn" onclick="delFinance('${f.id}')">🗑</button></td>
+      <td class="col-actions"><button class="icon-btn edit" onclick="financeForm('${f.id}')">✎</button><button class="icon-btn del" onclick="delFinance('${f.id}')">🗑</button></td>
     </tr>`;}).join("");
   view().innerHTML=`
     <div class="kpis">
@@ -1028,7 +1033,7 @@ function renderFinances(){
         <button class="btn sm ghost" onclick="lockFinance()">Lock again</button>
       </div>
       <div style="overflow-x:auto"><table>
-        <thead><tr><th>Date</th><th>Description</th><th>Category</th><th style="text-align:right">Amount</th><th></th></tr></thead>
+        <thead><tr><th>Date</th><th>Description</th><th>Category</th><th style="text-align:right">Amount</th><th class="col-actions"></th></tr></thead>
         <tbody>${rows || `<tr><td colspan="5" class="empty"><div class="big">No entries yet</div>Add money in or out to start the ledger.</td></tr>`}</tbody>
       </table></div>
     </div>`;
