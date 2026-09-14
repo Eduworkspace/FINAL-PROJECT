@@ -370,7 +370,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 const TEAM_PASSWORD = "eduvoyage";     // shared login for everyone
 const ADMIN_CODE    = "admin2026";     // unlocks Personal Workspace + Activity Log
 const FINANCE_CODE  = "money2026";     // Finances only — KEEP THIS DIFFERENT from ADMIN_CODE
-const VERSION       = "v3.6 · 13 Sep 2026";   // shows in the sidebar so everyone can confirm they're on the same copy
+const VERSION       = "v3.7 · 13 Sep 2026";   // shows in the sidebar so everyone can confirm they're on the same copy
 
 /* CROSS-DEVICE SYNC (optional).
    Leave both blank -> the workspace saves on THIS device only.
@@ -574,7 +574,7 @@ function renderSyncTag(){
 let current = "attendance";
 let adminUnlocked=false;
 let finUnlocked=false;
-const LOCKED = ["dashboard","clients","services","personal","activity","finances"];   // open to all: Daily Sign-in, Social Media, Webinars
+const LOCKED = ["personal","activity","finances"];   // open to all: Dashboard, Client Work, Services, Social Media, Webinars, Daily Sign-in
 const TITLES = {
   dashboard:["Dashboard","A quick look at where things stand today"],
   attendance:["Daily Sign-in","Sign in for the day and see who's online"],
