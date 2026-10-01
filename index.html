@@ -23,24 +23,24 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 </script>
 <style>
   :root{
-    --ink:#EBEFF7;
-    --muted:#9BA7BE;
-    --faint:#6C778F;
-    --navy:#0F1622;
-    --navy-2:#161F30;
+    --ink:#1C2B47;
+    --muted:#5F6B85;
+    --faint:#8C96AB;
+    --navy:#1E2C49;
+    --navy-2:#233457;
     --accent:#E8873F;
     --accent-press:#CF6F2C;
-    --accent-soft:#3A2A1C;
-    --bg:#07090E;
-    --surface:#141A24;
-    --line:#252D3B;
-    --line-strong:#343E50;
-    --green:#5FD39A; --green-bg:#152A20;
-    --amber:#E0B24E; --amber-bg:#2B2415;
-    --blue:#7FA6EC;  --blue-bg:#172338;
-    --red:#EC8B82;   --red-bg:#301B19;
-    --purple:#B199E8;--purple-bg:#241C39;
-    --grey:#9BA7BE;  --grey-bg:#1E2531;
+    --accent-soft:#FCEBDD;
+    --bg:#F4F6FA;
+    --surface:#FFFFFF;
+    --line:#E4E8EF;
+    --line-strong:#CDD4E0;
+    --green:#1E8A5A; --green-bg:#E3F4EB;
+    --amber:#A86A0C; --amber-bg:#FBF0DA;
+    --blue:#2E5BB8;  --blue-bg:#E5EDFB;
+    --red:#C0453B;   --red-bg:#FBE6E3;
+    --purple:#6A4BC4;--purple-bg:#EEE9FB;
+    --grey:#5F6B85;  --grey-bg:#EEF1F5;
     --radius:16px;
     --shadow-sm:0 1px 2px rgba(28,43,71,.05);
     --shadow-md:0 8px 26px rgba(28,43,71,.09);
@@ -166,7 +166,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;box-shadow:var(--shadow-sm)}
   .kpi .n{font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1;color:var(--ink)}
   .kpi .l{font-size:13px;color:var(--muted);font-weight:500;margin-top:10px}
-  .kpi.accent{background:linear-gradient(160deg,#1C2331,#241a12);border-color:#4a3320}
+  .kpi.accent{background:linear-gradient(160deg,#FFFFFF,#FDF1E6);border-color:#F2D3B8}
   .kpi.accent .n{color:var(--accent-press)}
 
   table{width:100%;border-collapse:collapse}
@@ -176,7 +176,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   }
   tbody td{padding:15px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle;font-weight:500}
   tbody tr:last-child td{border-bottom:none}
-  tbody tr:hover{background:#1C2432}
+  tbody tr:hover{background:#F7F9FC}
   .client-name{font-weight:600}
   .muted{color:var(--muted)}
   .dash{color:var(--line-strong)}
@@ -193,9 +193,29 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   .icon-btn:hover{background:var(--bg);color:var(--ink)}
   .icon-btn.edit{color:var(--accent)}
   .icon-btn.del{color:var(--red)}
+  .file-list{display:flex;flex-direction:column}
+  .file-row{display:flex;align-items:center;gap:14px;padding:13px 4px;border-top:1px solid var(--line)}
+  .file-row:first-child{border-top:none}
+  .file-badge{flex:none;width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;letter-spacing:.04em;background:var(--accent-soft);color:var(--accent)}
+  .file-badge.img{background:var(--blue-bg);color:var(--blue)}
+  .file-badge.doc{background:var(--purple-bg);color:var(--purple)}
+  .file-badge.sheet{background:var(--green-bg);color:var(--green)}
+  .file-main{flex:1;min-width:0}
+  .file-title{font-weight:600;overflow-wrap:anywhere}
+  .file-meta{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .file-acts{flex:none;display:flex;gap:6px;align-items:center}
+  .file-group{font-size:13px;font-weight:700;color:var(--muted);margin:22px 0 4px}
+  .file-group:first-child{margin-top:0}
+  .res-tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+  .res-tools input,.res-tools select{flex:1;min-width:180px;padding:11px 13px;border-radius:10px;border:1.5px solid var(--line-strong);background:var(--surface);color:var(--ink);font:inherit}
+  .notice{padding:16px 18px;border-radius:12px;background:var(--amber-bg);color:var(--amber);font-size:14px;line-height:1.55;margin-bottom:18px}
+  .upload-box{border:1.5px dashed var(--line-strong);border-radius:12px;padding:16px;margin-top:16px}
+  .docs-btn{background:transparent;border:1.5px solid var(--line-strong);color:var(--ink);border-radius:999px;padding:4px 9px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .docs-btn:hover{border-color:var(--accent);color:var(--accent)}
+  @media (max-width:640px){ .file-row{flex-wrap:wrap} .file-acts{width:100%;padding-left:58px} }
   .social-grid{display:grid;grid-template-columns:1fr;gap:10px}
   @media(min-width:720px){ .social-grid{grid-template-columns:1fr 1fr} }
-  .social-card{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:13px;padding:11px 13px;background:#1B2230}
+  .social-card{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:13px;padding:11px 13px;background:#FAFBFD}
   .social-badge{width:38px;height:38px;border-radius:10px;flex:none;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;letter-spacing:.5px}
   .social-meta{flex:1;min-width:0}
   .social-plat{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
@@ -215,7 +235,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   .svc-reqs li::before{content:"";position:absolute;left:3px;top:13px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
   /* Keep edit/delete pinned to the right so they're always reachable when a wide table scrolls */
   th.col-actions,td.col-actions{position:sticky;right:0;background:var(--surface);white-space:nowrap;text-align:right;box-shadow:-10px 0 14px rgba(20,30,50,.05)}
-  tbody tr:hover td.col-actions{background:#1C2432}
+  tbody tr:hover td.col-actions{background:#F7F9FC}
 
   .empty{padding:46px 24px;text-align:center;color:var(--muted)}
   .empty .big{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px}
@@ -223,9 +243,9 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   .split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
   .col-head{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;margin-bottom:16px;letter-spacing:-.01em}
   .col-head .dot{width:10px;height:10px;border-radius:50%}
-  .content-item{border:1px solid var(--line);border-radius:13px;padding:16px 17px;margin-bottom:13px;background:#1B2230}
+  .content-item{border:1px solid var(--line);border-radius:13px;padding:16px 17px;margin-bottom:13px;background:#FAFBFD}
   .content-item h4{margin:0 0 6px;font-size:14.5px;font-weight:600}
-  .content-item .body{font-size:13.5px;color:#C3CCDC;white-space:pre-wrap;line-height:1.6;font-weight:500}
+  .content-item .body{font-size:13.5px;color:#3D4A63;white-space:pre-wrap;line-height:1.6;font-weight:500}
   .content-item .acts{display:flex;gap:8px;margin-top:13px}
 
   .todo{display:flex;align-items:flex-start;gap:12px;padding:13px 4px;border-bottom:1px solid var(--line)}
@@ -237,13 +257,13 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   .field{margin-bottom:15px}
   .field label{display:block;font-size:13px;font-weight:600;margin-bottom:7px}
   .field input,.field select,.field textarea{
-    width:100%;padding:12px 13px;border:1.5px solid var(--line-strong);border-radius:11px;font-size:14.5px;background:#0E141E;font-weight:500;
+    width:100%;padding:12px 13px;border:1.5px solid var(--line-strong);border-radius:11px;font-size:14.5px;background:#FFFFFF;font-weight:500;
   }
   .field textarea{min-height:120px;resize:vertical;line-height:1.6}
   .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(30,44,73,.10)}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
 
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+  .overlay{position:fixed;inset:0;background:rgba(20,30,50,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
   .overlay.on{display:flex}
   .modal{background:var(--surface);border-radius:20px;width:100%;max-width:530px;box-shadow:var(--shadow-lg);max-height:90vh;overflow:auto}
   .modal-head{padding:22px 26px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
@@ -255,7 +275,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   .gate .lockic{width:58px;height:58px;border-radius:15px;background:var(--accent-soft);color:var(--accent-press);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 18px}
   .gate h3{margin:0 0 6px;font-size:18px;font-weight:700}
   .gate p{color:var(--muted);font-size:13.5px;margin:0 0 20px;font-weight:500}
-  .gate input{width:100%;padding:13px 15px;border:1.5px solid var(--line-strong);border-radius:12px;font-size:16px;text-align:center;letter-spacing:2px;background:#0E141E}
+  .gate input{width:100%;padding:13px 15px;border:1.5px solid var(--line-strong);border-radius:12px;font-size:16px;text-align:center;letter-spacing:2px;background:#FFFFFF}
   .gate input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(30,44,73,.10)}
 
   .sync-tag{font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:999px;display:inline-flex;align-items:center;gap:6px}
@@ -330,6 +350,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
         <button class="nav-item" data-page="webinars"><span class="ic">◈</span> Webinars</button>
         <button class="nav-item" data-page="social"><span class="ic">✦</span> Social Media</button>
         <button class="nav-item" data-page="services"><span class="ic">❯</span> Services &amp; Info</button>
+        <button class="nav-item" data-page="resources"><span class="ic">▣</span> Resources</button>
         <button class="nav-item admin-only" data-page="finances"><span class="ic">▦</span> Finances</button>
       </div>
 
@@ -377,7 +398,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
    and password. Nobody's password is stored in this file. Who can get in, and
    who is admin, is controlled by the "staff" table in Supabase.
    ========================================================================= */
-const VERSION       = "v4.0 · 27 Sep 2026";   // shows in the sidebar so everyone can confirm they're on the same copy
+const VERSION       = "v4.1 · 1 Oct 2026";   // shows in the sidebar so everyone can confirm they're on the same copy
 
 /* Supabase project. The key below is the public "publishable" key: it is safe
    to be visible because the database refuses everyone who isn't signed in
@@ -637,12 +658,14 @@ const TITLES = {
   webinars:["Webinars","Sessions planned and delivered"],
   social:["Social Media","This week's content, ready to post"],
   services:["Services & Info","What we offer and what it costs"],
+  resources:["Resources","Country guides, partner decks and reference files"],
   finances:["Finances","Money in, money out"],
   personal:["Personal Workspace","Your own space"],
   activity:["Activity Log","Everything that's happened in here"]
 };
 function go(page){
   current = page;
+  if(page==="resources" || page==="clients") filesLoaded = false;   // fresh file list each time you open these
   document.querySelectorAll(".nav-item").forEach(b=> b.classList.toggle("active", b.dataset.page===page));
   document.getElementById("pageTitle").textContent = TITLES[page][0];
   document.getElementById("pageSub").textContent = TITLES[page][1];
@@ -653,7 +676,7 @@ document.querySelectorAll(".nav-item").forEach(b=> b.onclick = ()=>go(b.dataset.
 function renderCurrent(){
   if(!ME) return;
   if(LOCKED.includes(current) && !isAdmin()){ current="attendance"; return go("attendance"); }
-  ({dashboard:renderDashboard,attendance:renderAttendance,clients:renderClients,webinars:renderWebinars,social:renderSocial,services:renderServices,finances:renderFinances,personal:renderPersonal,activity:renderActivity}[current])();
+  ({dashboard:renderDashboard,attendance:renderAttendance,clients:renderClients,webinars:renderWebinars,social:renderSocial,services:renderServices,resources:renderResources,finances:renderFinances,personal:renderPersonal,activity:renderActivity}[current])();
 }
 const view = ()=>document.getElementById("view");
 function topBtn(label, fn){
@@ -813,6 +836,7 @@ const STAGE_LIST = Object.keys(STAGE);
 function stagePill(s){ return `<span class="pill ${STAGE[s]||"grey"}">${esc(s||"Enquiry")}</span>`; }
 function renderClients(){
   topBtn("Add request", ()=>clientForm());
+  if(!filesLoaded){ loadFiles().then(()=>{ if(current==="clients") renderClients(); }); }
   let feeSum=0, paidSum=0, dueSum=0, clientsCount=0;
   state.clients.forEach(c=>{
     const fee=Number(c.fee)||0, paid=Number(c.paid)||0;
@@ -832,8 +856,8 @@ function renderClients(){
       <td style="text-align:right">${fee?naira(fee):'<span class="dash">—</span>'}</td>
       <td style="text-align:right;color:var(--green)">${paid?naira(paid):'<span class="dash">—</span>'}</td>
       <td style="text-align:right;font-weight:700;color:${bal>0?'var(--red)':'var(--green)'}">${fee||paid?naira(bal):'<span class="dash">—</span>'}</td>
-      <td style="text-align:center">${c.drive?`<a href="${esc(c.drive)}" target="_blank" rel="noopener" title="Open documents">📎</a>`:'<span class="dash">—</span>'}</td>
       <td class="col-actions">
+        <button class="docs-btn" onclick="clientDocs('${c.id}')" title="Open this client's documents">📎 ${filesLoaded?FILES.filter(f=>f.kind==="client"&&f.client_id===c.id).length:"…"}</button>
         <button class="icon-btn edit" onclick="clientForm('${c.id}')">✎</button>
         <button class="icon-btn del" onclick="delClient('${c.id}')">🗑</button>
       </td>
@@ -849,8 +873,8 @@ function renderClients(){
       <div class="pad" style="padding-bottom:6px"><div class="section-title"><span class="tick"></span>Requests &amp; clients (${state.clients.length})</div></div>
       <div style="overflow-x:auto">
         <table>
-          <thead><tr><th>Inv#</th><th>Name</th><th>Service</th><th>Country</th><th>Stage</th><th>Status</th><th style="text-align:right">Fee</th><th style="text-align:right">Paid</th><th style="text-align:right">Balance</th><th>Docs</th><th class="col-actions"></th></tr></thead>
-          <tbody>${rows || `<tr><td colspan="11" class="empty"><div class="big">No requests yet</div>Add your first request to start tracking.</td></tr>`}</tbody>
+          <thead><tr><th>Inv#</th><th>Name</th><th>Service</th><th>Country</th><th>Stage</th><th>Status</th><th style="text-align:right">Fee</th><th style="text-align:right">Paid</th><th style="text-align:right">Balance</th><th class="col-actions">Docs</th></tr></thead>
+          <tbody>${rows || `<tr><td colspan="10" class="empty"><div class="big">No requests yet</div>Add your first request to start tracking.</td></tr>`}</tbody>
         </table>
       </div>
     </div>`;
@@ -878,7 +902,8 @@ window.clientForm = function(cid){
       <div class="field"><label>Service fee (₦)</label><input id="f_fee" type="number" value="${esc(c.fee)}" placeholder="0"></div>
       <div class="field"><label>Amount paid (₦)</label><input id="f_paid" type="number" value="${esc(c.paid)}" placeholder="0"></div>
     </div>
-    <div class="field"><label>Documents (Google Drive link)</label><input id="f_drive" value="${esc(c.drive)}" placeholder="Paste the client's Drive folder link"></div>
+    <div class="field"><label>Google Drive folder (optional)</label><input id="f_drive" value="${esc(c.drive)}" placeholder="Only if some files are still in Drive"></div>
+    ${cid?`<p class="muted" style="font-size:13px;margin:-4px 0 0">Upload passports, statements and letters with the 📎 button on the client list.</p>`:""}
   `, async ()=>{
     const name=document.getElementById("f_name").value.trim();
     if(!name){ alert("Name is needed."); return; }
@@ -894,9 +919,214 @@ window.clientForm = function(cid){
 };
 window.delClient = function(cid){
   const c=state.clients.find(x=>x.id===cid); if(!c) return;
-  confirmModal(`Remove ${esc(c.name)} from the client list?`, async ()=>{
+  const theirs = FILES.filter(f=>f.kind==="client"&&f.client_id===cid);
+  confirmModal(`Remove ${esc(c.name)} from the client list?${theirs.length?` This also deletes their ${theirs.length} uploaded document${theirs.length>1?"s":""}.`:""}`, async ()=>{
+    for(const f of theirs){ await deleteFileRecord(f, true); }
     state.clients=state.clients.filter(x=>x.id!==cid); log(`Removed client ${c.name}`); await save(); closeModal(); renderClients();
   });
+};
+
+/* ---------- Files: Resources + client documents (private Supabase storage) ----------
+   Files live in the private "workspace-files" storage area. Nothing there is public:
+   only signed-in staff can open a file, through a link that expires after 5 minutes.
+   Needs add-documents.sql run once in Supabase. */
+const BUCKET = "workspace-files";
+const MAX_MB = 25;
+const ACCEPT = ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.webp,.heic,.txt,.csv";
+const RES_CATS = ["Country guide","Partner deck","Checklist","Policy update","Other"];
+const DOC_TYPES = ["Passport","Bank statement","Admission / offer letter","Transcript / certificate","Birth / marriage certificate","Visa decision","Receipt / invoice","Other"];
+const COUNTRY_HINTS = ["Canada","UK","Germany","Ireland","Netherlands","Sweden","Denmark","Finland","New Zealand","Belgium","Hungary","Lithuania","Qatar","Rwanda","General"];
+let FILES = [], filesLoaded = false, filesErr = null, resQuery = "", resCountry = "";
+
+async function loadFiles(){
+  if(!sb || !ME) return;
+  const {data, error} = await sb.from("workspace_files").select("*").order("created_at", {ascending:false});
+  if(error){ filesErr = /workspace_files|relation|schema cache|does not exist/i.test(error.message) ? "setup" : error.message; FILES = []; }
+  else { filesErr = null; FILES = data || []; }
+  filesLoaded = true;
+}
+function fmtSize(b){ b = Number(b)||0; if(b < 1024) return b+" B"; if(b < 1048576) return Math.round(b/1024)+" KB"; return (b/1048576).toFixed(1)+" MB"; }
+function fileKind(f){
+  const n = (f.file_name||"").toLowerCase(), m = (f.mime||"").toLowerCase();
+  if(m.startsWith("image/") || /\.(jpe?g|png|webp|heic)$/.test(n)) return ["IMG","img"];
+  if(/\.pdf$/.test(n) || m.includes("pdf")) return ["PDF",""];
+  if(/\.(xlsx?|csv)$/.test(n)) return ["XLS","sheet"];
+  if(/\.(pptx?)$/.test(n)) return ["PPT",""];
+  if(/\.(docx?|txt)$/.test(n)) return ["DOC","doc"];
+  return ["FILE","doc"];
+}
+function safeName(n){ return (n||"file").normalize("NFKD").replace(/[^\w.\-]+/g,"_").replace(/_+/g,"_").slice(-80); }
+function stripExt(n){ return (n||"").replace(/\.[^.]+$/,""); }
+function setupNotice(){
+  return `<div class="notice"><b>One setup step left.</b> Open Supabase, go to SQL Editor, paste everything from <b>add-documents.sql</b> and press Run. Then reload this page.</div>`;
+}
+
+/* Open in a new tab, or download. The link is made fresh and expires in 5 minutes. */
+window.openFile = async function(fid, download){
+  const f = FILES.find(x=>x.id===fid); if(!f) return;
+  const tab = download ? null : window.open("", "_blank");   // opened straight away so phones don't block it
+  const {data, error} = await sb.storage.from(BUCKET).createSignedUrl(f.path, 300, download ? {download: f.file_name || true} : undefined);
+  if(error){ if(tab) tab.close(); alert("Couldn't open the file: " + error.message); return; }
+  if(tab){ tab.location = data.signedUrl; }
+  else { const a = document.createElement("a"); a.href = data.signedUrl; a.rel = "noopener"; document.body.appendChild(a); a.click(); a.remove(); }
+};
+
+/* Upload one or more files. meta = {kind, client_id, title, country, category} */
+async function uploadFiles(fileList, meta, onProgress){
+  const files = Array.from(fileList || []);
+  const tooBig = files.filter(f => f.size > MAX_MB*1048576);
+  if(tooBig.length){ throw new Error(`${tooBig.map(f=>f.name).join(", ")} ${tooBig.length>1?"are":"is"} over ${MAX_MB} MB. Compress it or split it, then try again.`); }
+  let done = 0;
+  for(const file of files){
+    onProgress && onProgress(done+1, files.length);
+    const folder = meta.kind === "client" ? "clients/" + meta.client_id : "resources";
+    const path = `${folder}/${id()}-${safeName(file.name)}`;
+    const up = await sb.storage.from(BUCKET).upload(path, file, {contentType: file.type || undefined, upsert:false});
+    if(up.error) throw new Error(`${file.name}: ${up.error.message}`);
+    const title = (files.length === 1 && meta.title) ? meta.title : (meta.kind === "client" && meta.category ? meta.category + " · " + stripExt(file.name) : stripExt(file.name));
+    const ins = await sb.from("workspace_files").insert({
+      kind: meta.kind, client_id: meta.client_id || null, title, country: meta.country || null, category: meta.category || null,
+      path, file_name: file.name, size_bytes: file.size, mime: file.type || null, uploader_name: ME.name
+    }).select().single();
+    if(ins.error){ await sb.storage.from(BUCKET).remove([path]); throw new Error(`${file.name}: ${ins.error.message}`); }
+    FILES.unshift(ins.data);
+    done++;
+  }
+  return done;
+}
+
+/* Delete the record, then the file itself. Returns true if it went. */
+async function deleteFileRecord(f, quiet){
+  const r = await sb.from("workspace_files").delete().eq("id", f.id).select("id");
+  if(r.error || !r.data || !r.data.length){
+    if(!quiet) alert(r.error ? ("Couldn't delete: " + r.error.message) : "Only Aminat, or the person who uploaded it, can delete this file.");
+    return false;
+  }
+  await sb.storage.from(BUCKET).remove([f.path]);
+  FILES = FILES.filter(x => x.id !== f.id);
+  return true;
+}
+
+function fileRowHTML(f, opts){
+  const [label, cls] = fileKind(f);
+  const meta = [opts && opts.showCat && f.category ? esc(f.category) : "", fmtSize(f.size_bytes), fmtDate(f.created_at), f.uploader_name ? "by " + esc(f.uploader_name) : ""].filter(Boolean).join(", ");
+  return `<div class="file-row">
+    <div class="file-badge ${cls}">${label}</div>
+    <div class="file-main"><div class="file-title">${esc(f.title)}</div><div class="file-meta">${meta}</div></div>
+    <div class="file-acts">
+      <button class="btn sm" onclick="openFile('${f.id}')">Open</button>
+      <button class="btn sm ghost" onclick="openFile('${f.id}', true)">Download</button>
+      <button class="icon-btn del" title="Delete" onclick="${opts && opts.client ? `delClientFile('${f.id}')` : `delResource('${f.id}')`}">🗑</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- Resources page ---------- */
+function renderResources(){
+  topBtn("Upload file", ()=>resourceForm());
+  if(!filesLoaded){
+    view().innerHTML = `<div class="card"><div class="empty">Loading files…</div></div>`;
+    loadFiles().then(()=>{ if(current === "resources") renderResources(); });
+    return;
+  }
+  if(filesErr === "setup"){ view().innerHTML = setupNotice(); return; }
+  if(filesErr){ view().innerHTML = `<div class="notice">Couldn't load files: ${esc(filesErr)}</div>`; return; }
+  const res = FILES.filter(f => f.kind === "resource");
+  const countries = [...new Set(res.map(f => f.country || "General"))].sort();
+  view().innerHTML = `
+    <div class="res-tools">
+      <input id="resSearch" type="search" placeholder="Search by title or file name" value="${esc(resQuery)}">
+      <select id="resCountry"><option value="">All countries</option>${countries.map(c=>`<option ${c===resCountry?"selected":""}>${esc(c)}</option>`).join("")}</select>
+    </div>
+    <div class="card pad" id="resList"></div>`;
+  const draw = ()=>{
+    const q = resQuery.toLowerCase();
+    const list = res.filter(f => (!resCountry || (f.country||"General") === resCountry) &&
+      (!q || (f.title + " " + (f.file_name||"") + " " + (f.category||"") + " " + (f.country||"")).toLowerCase().includes(q)));
+    const box = document.getElementById("resList");
+    if(!res.length){ box.innerHTML = `<div class="empty"><div class="big">No files yet</div>Upload your country guides and partner decks so they're one tap away.</div>`; return; }
+    if(!list.length){ box.innerHTML = `<div class="empty"><div class="big">Nothing matches</div>Try a different word or choose All countries.</div>`; return; }
+    const groups = {};
+    list.forEach(f => { const k = f.country || "General"; (groups[k] = groups[k] || []).push(f); });
+    box.innerHTML = Object.keys(groups).sort().map(k =>
+      `<div class="file-group">${esc(k)} (${groups[k].length})</div><div class="file-list">${groups[k].map(f=>fileRowHTML(f,{showCat:true})).join("")}</div>`).join("");
+  };
+  document.getElementById("resSearch").oninput = e => { resQuery = e.target.value; draw(); };
+  document.getElementById("resCountry").onchange = e => { resCountry = e.target.value; draw(); };
+  draw();
+}
+function resourceForm(){
+  if(filesErr === "setup") return alert("Run add-documents.sql in Supabase first, then reload.");
+  openModal("Upload to Resources", `
+    <div class="field"><label>File</label><input id="r_file" type="file" multiple accept="${ACCEPT}"><p class="muted" style="font-size:12.5px;margin:6px 0 0">PDF, Word, PowerPoint, Excel or images, up to ${MAX_MB} MB each. You can pick several at once.</p></div>
+    <div class="field"><label>Title</label><input id="r_title" placeholder="e.g. Netherlands study to PR guide"><p class="muted" style="font-size:12.5px;margin:6px 0 0">Leave blank to use the file name. Used only when you upload one file.</p></div>
+    <div class="grid2">
+      <div class="field"><label>Country</label><input id="r_country" list="r_countries" placeholder="e.g. Germany"><datalist id="r_countries">${COUNTRY_HINTS.map(c=>`<option value="${c}">`).join("")}</datalist></div>
+      <div class="field"><label>Type</label><select id="r_cat">${RES_CATS.map(c=>`<option>${c}</option>`).join("")}</select></div>
+    </div>
+    <p class="err" id="r_err" style="margin:0"></p>
+  `, async function(){
+    const btn = this;
+    const files = document.getElementById("r_file").files;
+    const errEl = document.getElementById("r_err");
+    if(!files || !files.length){ errEl.textContent = "Choose a file first."; return; }
+    btn.disabled = true;
+    try{
+      const n = await uploadFiles(files, {kind:"resource", title:document.getElementById("r_title").value.trim(),
+        country:document.getElementById("r_country").value.trim() || "General", category:document.getElementById("r_cat").value},
+        (i,t)=>{ btn.textContent = t>1 ? `Uploading ${i} of ${t}…` : "Uploading…"; });
+      log(`Uploaded ${n} file${n>1?"s":""} to Resources`);
+      closeModal(); renderResources();
+    }catch(e){ errEl.textContent = e.message; btn.disabled = false; btn.textContent = "Upload"; }
+  }, "Upload");
+}
+window.delResource = function(fid){
+  const f = FILES.find(x=>x.id===fid); if(!f) return;
+  confirmModal(`Delete "${esc(f.title)}" from Resources?`, async ()=>{
+    if(await deleteFileRecord(f)) log(`Deleted resource ${f.title}`);
+    closeModal(); renderResources();
+  });
+};
+
+/* ---------- Client documents (opened from the 📎 button on Client Work) ---------- */
+window.clientDocs = async function(cid){
+  const c = state.clients.find(x=>x.id===cid); if(!c) return;
+  if(!filesLoaded) await loadFiles();
+  if(filesErr === "setup") return alert("Run add-documents.sql in Supabase first, then reload.");
+  const mine = FILES.filter(f => f.kind === "client" && f.client_id === cid);
+  openModal(`Documents: ${c.name}`, `
+    ${mine.length ? `<div class="file-list">${mine.map(f=>fileRowHTML(f,{client:true})).join("")}</div>`
+                  : `<div class="empty" style="padding:22px 10px"><div class="big">No documents yet</div>Upload passports, statements and letters below.</div>`}
+    ${c.drive ? `<p style="margin:14px 0 0;font-size:13.5px"><a href="${esc(c.drive)}" target="_blank" rel="noopener" style="color:var(--accent)">Open their Google Drive folder</a></p>` : ""}
+    <div class="upload-box">
+      <div class="grid2">
+        <div class="field"><label>Document type</label><select id="d_type">${DOC_TYPES.map(t=>`<option>${t}</option>`).join("")}</select></div>
+        <div class="field"><label>File</label><input id="d_file" type="file" multiple accept="${ACCEPT}"></div>
+      </div>
+      <p class="err" id="d_err" style="margin:0 0 10px"></p>
+      <button class="btn sm" id="d_go">Upload</button>
+    </div>
+  `, closeModal, "Done");
+  const foot = document.getElementById("mFoot"); if(foot.firstChild) foot.firstChild.remove();   // just a Done button
+  document.getElementById("d_go").onclick = async function(){
+    const btn = this, files = document.getElementById("d_file").files, errEl = document.getElementById("d_err");
+    if(!files || !files.length){ errEl.textContent = "Choose a file first."; return; }
+    btn.disabled = true;
+    try{
+      const n = await uploadFiles(files, {kind:"client", client_id:cid, category:document.getElementById("d_type").value, country:c.country},
+        (i,t)=>{ btn.textContent = t>1 ? `Uploading ${i} of ${t}…` : "Uploading…"; });
+      log(`Uploaded ${n} document${n>1?"s":""} for ${c.name}`);
+      if(current === "clients") renderClients();
+      clientDocs(cid);
+    }catch(e){ errEl.textContent = e.message; btn.disabled = false; btn.textContent = "Upload"; }
+  };
+};
+window.delClientFile = async function(fid){
+  const f = FILES.find(x=>x.id===fid); if(!f) return;
+  if(!confirm(`Delete "${f.title}"? This can't be undone.`)) return;
+  if(await deleteFileRecord(f)) log(`Deleted document ${f.title}`);
+  if(current === "clients") renderClients();
+  clientDocs(f.client_id);
 };
 
 /* ---------- Webinars ---------- */
@@ -1208,7 +1438,7 @@ function renderPersonal(){
         <div class="section-title"><span class="tick"></span>To-dos</div>
       </div>
       <div style="display:flex;gap:10px;margin-bottom:8px">
-        <input id="todoInput" placeholder="Add something to do..." style="flex:1;padding:11px 12px;border:1.5px solid var(--line-strong);border-radius:10px;font-size:14.5px;background:#0E141E;color:var(--ink)">
+        <input id="todoInput" placeholder="Add something to do..." style="flex:1;padding:11px 12px;border:1.5px solid var(--line-strong);border-radius:10px;font-size:14.5px;background:#FFFFFF;color:var(--ink)">
         <button class="btn" onclick="addTodo()">Add</button>
       </div>
       <div id="todoList">${renderTodoList()}</div>
@@ -1216,7 +1446,7 @@ function renderPersonal(){
     <div class="card pad">
       <div class="section-title"><span class="tick"></span>Notes</div>
       <p class="muted" style="margin:6px 0 12px">Anything you like — ideas, reminders, drafts. Saves as you type.</p>
-      <textarea id="notesBox" style="width:100%;min-height:260px;border:1.5px solid var(--line-strong);border-radius:12px;padding:14px;font-size:14.5px;line-height:1.6;background:#0E141E;resize:vertical;color:var(--ink)" placeholder="Start writing...">${esc(state.notes)}</textarea>
+      <textarea id="notesBox" style="width:100%;min-height:260px;border:1.5px solid var(--line-strong);border-radius:12px;padding:14px;font-size:14.5px;line-height:1.6;background:#FFFFFF;resize:vertical;color:var(--ink)" placeholder="Start writing...">${esc(state.notes)}</textarea>
     </div>`;
   const box=document.getElementById("notesBox");
   let tmr; box.addEventListener("input",()=>{ clearTimeout(tmr); tmr=setTimeout(async ()=>{ state.notes=box.value; await save(); },500); });
